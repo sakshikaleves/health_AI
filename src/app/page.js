@@ -264,7 +264,7 @@ export default function AuthFlow() {
   const handleVerifyOTP = () => {
     if (otp.length === 6) {
       // Normally would verify with backend
-      router.push("/login"); // Or wherever you want to go next
+      router.push("/ai"); // Or wherever you want to go next
     }
   };
 
