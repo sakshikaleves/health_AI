@@ -3,59 +3,70 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Home, FileText, Sparkles, Bell } from "lucide-react";
 import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
 
 const BottomNavbar = () => {
   const [activeTab, setActiveTab] = useState("records");
-
+  const router = useRouter();
+  const pathname = usePathname();
   const navItems = [
     {
       id: "home",
-      icon: Home,
+      icon: "/navbar/home.png",
       label: "Home",
     },
     {
       id: "records",
-      icon: FileText,
+      icon: "/navbar/records.png",
       label: "Records",
     },
     {
       id: "ai",
-      icon: Sparkles,
+      icon: "/navbar/ai.png",
       label: "AI",
     },
     {
       id: "notification",
-      icon: Bell,
+      icon: "/navbar/notification.png",
       label: "Notification",
     },
+  // Don't show the navbar on the login and ai pages
   ];
-
+  if (pathname === "/login" || pathname === "/scanner") return null;
   return (
-    <div className="fixed bottom-2 left-0 right-0  px-7 z-50">
-      <div className="flex justify-between p-3 pl-4 pr-4 rounded-full shadow-2xl items-center">
+    <div className="fixed bottom-2 z- left-0 right-0  px-6 z-50">
+      <div className="flex justify-around p-2 pl-4 bg-white pr-4 rounded-full shadow-2xl items-center">
         {navItems.map((item) => (
           <Link
             key={item.id}
             href={`/${item.id}`}
-            className="flex flex-col items-center justify-center"
+            className="flex flex-col items-center max-w-md justify-center"
             onClick={() => setActiveTab(item.id)}
           >
             <div
               className={`
-              relative  p-1
-              ${activeTab === item.id ? "text-teal-500" : "text-gray-400"}
+              relative  p-1 w-full flex items-center justify-center rounded-full
+              ${
+                activeTab === item.id
+                  ? " bg-[#f1fffd] text-teal-500"
+                  : "text-gray-400"
+              }
             `}
             >
-              <item.icon
-                className={`w-8 h-8 ${
+              <Image
+                src={item.icon}
+                alt={item.label}
+                width={26}
+                height={26}
+                className={`${
                   activeTab === item.id ? "text-teal-500" : "text-gray-400"
                 }`}
               />
             </div>
             <span
               className={`
-              text-[10px] mt-1 
-              ${activeTab === item.id ? "text-teal-500" : "text-gray-400"}
+              text-sm  font-semibold
+              ${activeTab === item.id ? "text-teal-500" : ""}
             `}
             >
               {item.label}
@@ -67,13 +78,15 @@ const BottomNavbar = () => {
         ))}
 
         <div className="absolute left-1/2 -top-[22px] -translate-x-1/2 bg-black w-[58px] h-[58px] rounded-full flex items-center justify-center shadow-lg">
-           <Image
-            src="/logo.png"
-            alt="avatar"
-            width={40}
-            height={40}
-            className="rounded-full"
+          <Link href={"/scanner"}>
+            <Image
+              src="/logo.png"
+              alt="avatar"
+              width={40}
+              height={40}
+              className="rounded-full"
             />
+          </Link>
         </div>
       </div>
     </div>

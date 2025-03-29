@@ -24,11 +24,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} overflow-x-hidden antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#F8F9FA] overflow-x-hidden antialiased`}
       >
         <UserProvider>
           <ProfileNavbar />
-           {children}
+            {children}
+           <BottomNavbar />
         </UserProvider>
       </body>
     </html>
