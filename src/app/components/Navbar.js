@@ -7,15 +7,19 @@ import { ChevronDown, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { profiles } from "@/data/Users";
 import { useUser } from "@/context/UserContext";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser, changeUser } = useUser();
+  const pathname = usePathname();
 
   const handleProfileClick = (profile) => {
     changeUser(profile);
     setIsOpen(false);
   };
+
+  if (pathname === "/login" || pathname === "/otp") return null;
 
   return (
     <div className="relative w-screen mx-auto">
