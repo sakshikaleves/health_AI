@@ -76,7 +76,7 @@ const BottomNavbar = () => {
           </Link>
         ))}
 
-        <div className="absolute left-1/2 -top-[22px] -translate-x-1/2 bg-black w-[58px] h-[58px] rounded-full flex items-center justify-center shadow-lg">
+        <div className="absolute left-1/2 -top-[28px] -translate-x-1/2 bg-black w-[58px] h-[58px] rounded-full flex items-center justify-center shadow-lg">
           <Link href={"/scanner"}>
             <Image
               src="/logo.png"

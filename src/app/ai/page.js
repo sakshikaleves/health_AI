@@ -121,7 +121,7 @@ export default function AIAssistant() {
 
   // Rest of your component remains the same
   return (
-    <div className="p-4 min-h-[90vh] max-w-lg mx-auto bg-gray-50 flex flex-col">
+    <div className="p-4 min-h-[80vh] max-w-lg mx-auto bg-gray-50 flex flex-col">
       <div className="bg-gradient-to-r from-teal-600 to-teal-800 p-5 rounded-lg shadow-lg text-white mb-4">
         <h1 className="text-xl font-semibold flex items-center gap-2">
           <Bot className="h-5 w-5" /> AI Health Assistant
