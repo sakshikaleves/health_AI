@@ -21,7 +21,7 @@ export default function Navbar() {
     <div className="relative w-screen mx-auto">
       <div className="flex justify-center items-center bg-gradient-to-r from-teal-800 to-teal-600 p-4 shadow-lg">
         <div
-          className="flex items-center gap-3 bg-white/95 px-4 py-2.5 rounded-full shadow-md cursor-pointer hover:shadow-lg transition-all duration-200"
+          className="flex items-center gap-3 bg-white/95 px-3 py-2 rounded-full shadow-md cursor-pointer hover:shadow-lg transition-all duration-200"
           onClick={() => setIsOpen(!isOpen)}
         >
           <Avatar className="w-8 h-8 ring-2 ring-teal-500/30 ring-offset-1">
@@ -34,7 +34,7 @@ export default function Navbar() {
             }`}
           />
         </div>
-        <div className="absolute right-4 flex items-center gap-2 bg-gray-800/90 text-white px-4 py-2 rounded-full shadow-md backdrop-blur-sm border border-gray-700/30">
+        <div className="absolute right-4 flex items-center gap-2 bg-gray-800/90 text-white px-2.5 py-1.5 rounded-full shadow-md backdrop-blur-sm border border-gray-700/30">
           <span className="text-yellow-300 font-semibold">36</span>
           <div className="w-4 h-4 text-yellow-300 flex items-center justify-center">
             🪙
