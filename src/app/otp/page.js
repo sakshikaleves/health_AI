@@ -258,7 +258,7 @@ export default function AuthFlow() {
 
         {/* Resend OTP */}
         <p className="mt-3 text-gray-600">
-          Don't receive OTP?{" "}
+          Don&apos;t receive OTP?{" "}
           <button
             className={`font-semibold ${
               timer > 0 ? "text-gray-400" : "text-[#0F5D46]"
