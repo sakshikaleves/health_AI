@@ -19,7 +19,14 @@ export default function Navbar() {
     setIsOpen(false);
   };
 
-  if (pathname === "/login" || pathname === "/") return null;
+  if (
+    pathname === "/login" ||
+    pathname === "/welcome" ||
+    pathname === "/" ||
+    pathname === "/otp" ||
+    pathname === "/scanner"
+  )
+    return null;
 
   return (
     <div className="relative w-screen mx-auto">

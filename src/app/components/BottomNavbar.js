@@ -31,7 +31,14 @@ const BottomNavbar = () => {
     },
   // Don't show the navbar on the login and ai pages
   ];
-  if (pathname === "/login" || pathname === "/") return null;
+  if (
+    pathname === "/login" ||
+    pathname === "/welcome" ||
+    pathname === "/" ||
+    pathname === "/otp" ||
+    pathname === "/scanner"
+  )
+    return null;
   return (
     <div className="fixed bottom-2 z- left-0 right-0  px-6 z-50">
       <div className="flex justify-around p-2 pl-4 bg-white pr-4 rounded-full shadow-2xl items-center">

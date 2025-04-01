@@ -87,7 +87,7 @@ export default function PrescriptoWelcome() {
             <div className="mt-8">
               <button
                 className="w-full bg-teal-700 text-white py-3 rounded-md text-sm"
-                onClick={() => router.push("/scanner")}
+                onClick={() => router.push("/home")}
               >
                 Continue as guest
               </button>
@@ -178,4 +178,3 @@ export default function PrescriptoWelcome() {
     </div>
   );
 }
-
