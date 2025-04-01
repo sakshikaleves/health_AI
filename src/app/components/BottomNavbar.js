@@ -40,7 +40,7 @@ const BottomNavbar = () => {
   )
     return null;
   return (
-    <div className="fixed bottom-2 z- left-0 right-0  px-6 z-50">
+    <div className="fixed bottom-2 z- left-0 right-0 px-4 px- z-50">
       <div className="flex justify-around p-2 pl-4 bg-white pr-4 rounded-full shadow-2xl items-center">
         {navItems.map((item) => (
           <Link
@@ -83,7 +83,7 @@ const BottomNavbar = () => {
           </Link>
         ))}
 
-        <div className="absolute left-1/2 -top-[28px] -translate-x-1/2 bg-black w-[58px] h-[58px] rounded-full flex items-center justify-center shadow-lg">
+        <div className="absolute left-1/2 -top-[32px] -translate-x-1/2 bg-black w-[58px] h-[58px] rounded-full flex items-center justify-center shadow-lg">
           <Link href={"/scanner"}>
             <Image
               src="/logo.png"

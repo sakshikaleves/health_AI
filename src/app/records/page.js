@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
+  FileText,
 } from "lucide-react";
 import {
   Popover,
@@ -367,32 +368,32 @@ const RecordsPage = () => {
 
   return (
     <div className="max-w-md mx-auto bg-slate-50 min-h-screen p-4">
-      <h2 className="text-xl font-bold mb-1">Records</h2>
-      <p className="text-sm text-gray-500 mb-4">Based on uploaded records.</p>
+      <h2 className="text-xl font-bold mb-1 text-gray-800">Records</h2>
+      <p className="text-sm text-gray-500 mb-5">Based on uploaded records.</p>
 
       {/* Tabs */}
       <Tabs
         defaultValue={selectedTab}
-        className="mb-4"
+        className="mb-5"
         onValueChange={setSelectedTab}
       >
-        <TabsList className="grid grid-cols-2 mb-4">
+        <TabsList className="grid grid-cols-2 gap-3 p-1 bg-gray-100 rounded-xl mb-4">
           <TabsTrigger
             value="prescription"
-            className={`rounded-full py-2 px-4 ${
+            className={`rounded-lg py-2.5 px-4 transition-all duration-200 ${
               selectedTab === "prescription"
-                ? "bg-teal-600 text-white"
-                : "bg-gray-200"
+                ? "bg-teal-600 text-white shadow-sm"
+                : "bg-transparent text-gray-600 hover:bg-gray-200"
             }`}
           >
             Prescription
           </TabsTrigger>
           <TabsTrigger
             value="lab-report"
-            className={`rounded-full py-2 px-4 ${
+            className={`rounded-lg py-2.5 px-4 transition-all duration-200 ${
               selectedTab === "lab-report"
-                ? "bg-teal-600 text-white"
-                : "bg-gray-200"
+                ? "bg-teal-600 text-white shadow-sm"
+                : "bg-transparent text-gray-600 hover:bg-gray-200"
             }`}
           >
             Lab Report
@@ -405,56 +406,72 @@ const RecordsPage = () => {
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full justify-between bg-white border rounded-md h-12 mb-4"
+            className="w-full justify-between bg-white border-gray-200 rounded-xl h-12 mb-5 shadow-sm hover:bg-gray-50 transition-colors"
           >
-            <span>{formatDateDisplay()}</span>
-            <CalendarIcon className="ml-2 h-4 w-4" />
+            <div className="flex items-center">
+              <CalendarIcon className="h-4 w-4 text-teal-600 mr-2" />
+              <span className="text-gray-700">{formatDateDisplay()}</span>
+            </div>
+            <ChevronRight className="h-4 w-4 text-gray-400" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-full p-0" align="center">
-          <div className="bg-white rounded-lg shadow-lg">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-100">
             <div className="p-4">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold">Date filter</h3>
+                <h3 className="font-medium text-gray-800">Date filter</h3>
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="rounded-full hover:bg-gray-100"
                   onClick={() => setShowDateFilter(false)}
                 >
-                  <X size={18} />
+                  <X size={18} className="text-gray-500" />
                 </Button>
               </div>
 
               {/* Filter options */}
-              <div className="grid grid-cols-4 gap-2 mb-4">
+              <div className="grid grid-cols-4 gap-2 mb-5 bg-gray-100 p-1 rounded-lg">
                 <Button
-                  variant={filterView === "day" ? "default" : "outline"}
-                  className={filterView === "day" ? "bg-black text-white" : ""}
+                  variant={filterView === "day" ? "default" : "ghost"}
+                  className={`rounded-md py-1.5 ${
+                    filterView === "day"
+                      ? "bg-white text-teal-700 shadow-sm border border-gray-200"
+                      : "text-gray-600"
+                  }`}
                   onClick={() => setFilterView("day")}
                 >
                   Day
                 </Button>
                 <Button
-                  variant={filterView === "month" ? "default" : "outline"}
-                  className={
-                    filterView === "month" ? "bg-black text-white" : ""
-                  }
+                  variant={filterView === "month" ? "default" : "ghost"}
+                  className={`rounded-md py-1.5 ${
+                    filterView === "month"
+                      ? "bg-white text-teal-700 shadow-sm border border-gray-200"
+                      : "text-gray-600"
+                  }`}
                   onClick={() => setFilterView("month")}
                 >
                   Month
                 </Button>
                 <Button
-                  variant={filterView === "year" ? "default" : "outline"}
-                  className={filterView === "year" ? "bg-black text-white" : ""}
+                  variant={filterView === "year" ? "default" : "ghost"}
+                  className={`rounded-md py-1.5 ${
+                    filterView === "year"
+                      ? "bg-white text-teal-700 shadow-sm border border-gray-200"
+                      : "text-gray-600"
+                  }`}
                   onClick={() => setFilterView("year")}
                 >
                   Year
                 </Button>
                 <Button
-                  variant={filterView === "custom" ? "default" : "outline"}
-                  className={
-                    filterView === "custom" ? "bg-black text-white" : ""
-                  }
+                  variant={filterView === "custom" ? "default" : "ghost"}
+                  className={`rounded-md py-1.5 ${
+                    filterView === "custom"
+                      ? "bg-white text-teal-700 shadow-sm border border-gray-200"
+                      : "text-gray-600"
+                  }`}
                   onClick={() => setFilterView("custom")}
                 >
                   Custom
@@ -636,7 +653,7 @@ const RecordsPage = () => {
 
               {/* Apply button */}
               <Button
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-md mt-4"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl mt-4 shadow-sm transition-colors"
                 onClick={handleApply}
               >
                 Apply
@@ -648,12 +665,12 @@ const RecordsPage = () => {
 
       {/* Medication Records */}
       {selectedTab === "prescription" && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredMedications.length > 0 ? (
             <>
               {/* Date range summary */}
-              <div className="bg-white p-3 rounded-md shadow-sm">
-                <div className="text-sm font-medium text-gray-500 mb-2">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div className="text-sm font-medium text-gray-600 mb-3">
                   {filterView === "day" && "Daily Summary"}
                   {filterView === "month" && "Monthly Summary"}
                   {filterView === "year" && "Yearly Summary"}
@@ -664,24 +681,28 @@ const RecordsPage = () => {
                   if (!summary) return null;
 
                   return (
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div>
-                        <div className="text-lg font-bold">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-lg font-bold text-teal-700">
                           {filteredMedications.length}
                         </div>
-                        <div className="text-xs text-gray-500">Total</div>
+                        <div className="text-xs text-gray-500 mt-1">Total</div>
                       </div>
-                      <div>
-                        <div className="text-lg font-bold">
+                      <div className="bg-blue-50 rounded-lg p-3">
+                        <div className="text-lg font-bold text-blue-700">
                           {summary.activeCount}
                         </div>
-                        <div className="text-xs text-gray-500">Active</div>
+                        <div className="text-xs text-blue-700/70 mt-1">
+                          Active
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-lg font-bold">
+                      <div className="bg-green-50 rounded-lg p-3">
+                        <div className="text-lg font-bold text-green-700">
                           {summary.completedCount}
                         </div>
-                        <div className="text-xs text-gray-500">Completed</div>
+                        <div className="text-xs text-green-700/70 mt-1">
+                          Completed
+                        </div>
                       </div>
                     </div>
                   );
@@ -689,110 +710,157 @@ const RecordsPage = () => {
               </div>
 
               {filteredMedications.map((medication, index) => (
-                <Card key={index} className="shadow-sm">
-                  <CardContent className="p-3">
-                    <div className="flex justify-between items-start">
-                      <div className="font-medium mb-2">{medication.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {isValidDate(medication.date)
-                          ? format(new Date(medication.date), "dd MMM yyyy")
-                          : "No date"}
-                        {isValidDate(medication.date) &&
-                          isSameDay(medication.date, new Date()) &&
-                          " (Today)"}
-                        {isValidDate(medication.date) &&
-                          isSameDay(
-                            medication.date,
-                            new Date(
-                              new Date().setDate(new Date().getDate() - 1)
-                            )
-                          ) &&
-                          " (Yesterday)"}
+                <Card
+                  key={index}
+                  className="shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-0">
+                    <div className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="font-medium text-gray-800">
+                          {medication.name}
+                        </div>
+                        <div className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600">
+                          {isValidDate(medication.date)
+                            ? format(new Date(medication.date), "dd MMM yyyy")
+                            : "No date"}
+                          {isValidDate(medication.date) &&
+                            isSameDay(medication.date, new Date()) &&
+                            " (Today)"}
+                          {isValidDate(medication.date) &&
+                            isSameDay(
+                              medication.date,
+                              new Date(
+                                new Date().setDate(new Date().getDate() - 1)
+                              )
+                            ) &&
+                            " (Yesterday)"}
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      {medication.details.map((detail, detailIndex) => (
-                        <div key={detailIndex} className="flex items-center">
-                          <div
-                            className={`p-2 rounded-md mr-3 ${
-                              detail.type === "status" &&
-                              detail.text.includes("Completed")
-                                ? "bg-green-100"
-                                : detail.type === "status" &&
-                                  detail.text.includes("Active")
-                                ? "bg-blue-100"
-                                : "bg-gray-100"
-                            }`}
-                          >
-                            <div className="w-5 h-5 flex items-center justify-center">
-                              {detail.type === "pill" && <span>💊</span>}
-                              {detail.type === "status" && <span>🔄</span>}
-                              {detail.type === "instruction" && <span>📝</span>}
+                      <div className="mt-3 space-y-2.5">
+                        {medication.details.map((detail, detailIndex) => (
+                          <div key={detailIndex} className="flex items-center">
+                            <div
+                              className={`p-2 rounded-md mr-3 ${
+                                detail.type === "status" &&
+                                detail.text.includes("Completed")
+                                  ? "bg-green-100"
+                                  : detail.type === "status" &&
+                                    (detail.text.includes("Active") ||
+                                      detail.text.includes("Ongoing"))
+                                  ? "bg-blue-100"
+                                  : detail.type === "instruction"
+                                  ? "bg-amber-100"
+                                  : "bg-gray-100"
+                              }`}
+                            >
+                              <div className="w-5 h-5 flex items-center justify-center">
+                                {detail.type === "pill" && <span>💊</span>}
+                                {detail.type === "status" && <span>🔄</span>}
+                                {detail.type === "instruction" && (
+                                  <span>📝</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-700">
+                              {detail.text}
                             </div>
                           </div>
-                          <div className="text-sm">{detail.text}</div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-2 text-right">
+                      <Button
+                        variant="ghost"
+                        className="text-xs text-teal-700 hover:text-teal-800 hover:bg-teal-50"
+                        onClick={() =>
+                          (window.location.href = "/record-details")
+                        }
+                      >
+                        View Details →
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               ))}
 
               {/* Medication Adherence */}
-              <Card className="shadow-sm">
-                <CardContent className="p-3">
-                  <div className="font-medium mb-2">Medication Adherence</div>
-                  <div className="space-y-2">
-                    <div className="flex items-center">
-                      <div className="bg-gray-100 p-2 rounded-md mr-3">
-                        <div className="w-5 h-5 flex items-center justify-center">
-                          <span>💊</span>
+              <Card className="shadow-sm border border-gray-100 overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="font-medium text-gray-800 mb-3">
+                    Medication Adherence
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="bg-teal-100 p-2 rounded-md mr-3">
+                          <div className="w-5 h-5 flex items-center justify-center text-teal-700">
+                            <span>💊</span>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {getMedicationSummary()?.adherenceRate || 95}%
+                            Adherence
+                          </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {getMedicationSummary()?.adherenceRate >= 90
+                              ? "Excellent medication adherence"
+                              : getMedicationSummary()?.adherenceRate >= 80
+                              ? "Good medication adherence"
+                              : "Ensure timely medication intake"}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-sm font-medium">
-                        {getMedicationSummary()?.adherenceRate || 95}% Adherence
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="bg-gray-100 p-2 rounded-md mr-3">
-                        <div className="w-5 h-5 flex items-center justify-center">
-                          <span>🔄</span>
-                        </div>
-                      </div>
-                      <div className="text-sm">
-                        {getMedicationSummary()?.adherenceRate >= 90
-                          ? "Excellent medication adherence"
-                          : getMedicationSummary()?.adherenceRate >= 80
-                          ? "Good medication adherence"
-                          : "Ensure timely medication intake"}
-                      </div>
-                    </div>
-
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                       <div
-                        className={`h-2.5 rounded-full ${
+                        className={`text-sm font-medium px-2 py-1 rounded ${
                           (getMedicationSummary()?.adherenceRate || 95) >= 90
-                            ? "bg-green-500"
+                            ? "bg-green-100 text-green-800"
                             : (getMedicationSummary()?.adherenceRate || 95) >=
                               80
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
                         }`}
-                        style={{
-                          width: `${
-                            getMedicationSummary()?.adherenceRate || 95
-                          }%`,
-                        }}
                       ></div>
+                      {(getMedicationSummary()?.adherenceRate || 95) >= 90
+                        ? "Excellent"
+                        : (getMedicationSummary()?.adherenceRate || 95) >= 80
+                        ? "Good"
+                        : "Needs Attention"}
                     </div>
+                  </div>
+
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className={`h-2.5 rounded-full ${
+                        (getMedicationSummary()?.adherenceRate || 95) >= 90
+                          ? "bg-green-500"
+                          : (getMedicationSummary()?.adherenceRate || 95) >= 80
+                          ? "bg-yellow-500"
+                          : "bg-red-500"
+                      }`}
+                      style={{
+                        width: `${
+                          getMedicationSummary()?.adherenceRate || 95
+                        }%`,
+                      }}
+                    ></div>
                   </div>
                 </CardContent>
               </Card>
             </>
           ) : (
-            <div className="p-4 text-center text-gray-500">
-              <p>
+            <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                  <CalendarIcon className="w-8 h-8 text-gray-400" />
+                </div>
+              </div>
+              <p className="text-gray-600 mb-2">
                 No prescription records available for the selected time period.
+              </p>
+              <p className="text-sm text-gray-500">
+                Try selecting a different date range
               </p>
             </div>
           )}
@@ -801,8 +869,18 @@ const RecordsPage = () => {
 
       {/* Lab Reports (Placeholder) */}
       {selectedTab === "lab-report" && (
-        <div className="p-4 text-center text-gray-500">
-          <p>No lab reports available for the selected date.</p>
+        <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+              <FileText className="w-8 h-8 text-gray-400" />
+            </div>
+          </div>
+          <p className="text-gray-600 mb-2">
+            No lab reports available for the selected date.
+          </p>
+          <p className="text-sm text-gray-500">
+            Upload your lab reports to view them here
+          </p>
         </div>
       )}
     </div>
