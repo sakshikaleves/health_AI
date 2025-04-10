@@ -48,24 +48,30 @@ const RecordsPage = () => {
             // Try a direct fetch as a fallback if the API service fails
             let prescriptionData;
             try {
-              prescriptionData = await apiService.getPrescriptions();
+              const res = await fetch("/api/proxy/prescription");
+              prescriptionData = await res.json();
             } catch (apiError) {
               console.error("API service error:", apiError);
               console.log("Trying direct fetch as fallback...");
-              
+
               // Direct fetch as fallback - Add trailing slash to match Postman collection
-              const response = await fetch(`/api/proxy/patient/prescriptions/`, {
-                headers: {
-                  'Authorization': `Bearer ${apiService.sessionId}`,
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
+              const response = await fetch(
+                `/api/proxy/patient/prescriptions/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${apiService.sessionId}`,
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                  },
                 }
-              });
-              
+              );
+
               if (!response.ok) {
-                throw new Error(`Fallback fetch failed with status ${response.status}`);
+                throw new Error(
+                  `Fallback fetch failed with status ${response.status}`
+                );
               }
-              
+
               prescriptionData = await response.json();
             }
 
@@ -103,7 +109,8 @@ const RecordsPage = () => {
         // Fetch lab reports
         else if (selectedTab === "lab-report") {
           console.log("Fetching lab reports data...");
-          const labReportData = await apiService.getLabReports();
+          const res = await fetch("/api/proxy/labreports");
+          const labReportData = await res.json();
           console.log("Lab Report data received:", labReportData);
           setLabReports(labReportData.LabTestReports || []);
           setUserData({
@@ -298,25 +305,25 @@ const RecordsPage = () => {
 
                         {/* Medications list */}
                         <div className="mt-3 space-y-2.5"></div>
-                          {medications.length > 0 ? (
-                            medications.map((med, medIndex) => (
-                              <div key={medIndex} className="flex items-center">
-                                <div className="p-2 rounded-md mr-3 bg-gray-100">
-                                  <div className="w-5 h-5 flex items-center justify-center">
-                                    <span>💊</span>
-                                  </div>
-                                </div>
-                                <div className="text-sm text-gray-700">
-                                  {med.text}
+                        {medications.length > 0 ? (
+                          medications.map((med, medIndex) => (
+                            <div key={medIndex} className="flex items-center">
+                              <div className="p-2 rounded-md mr-3 bg-gray-100">
+                                <div className="w-5 h-5 flex items-center justify-center">
+                                  <span>💊</span>
                                 </div>
                               </div>
-                            ))
-                          ) : (
-                            <div className="text-sm text-gray-500 italic">
-                              No medication details available
+                              <div className="text-sm text-gray-700">
+                                {med.text}
+                              </div>
                             </div>
-                          )}
-                        </div>
+                          ))
+                        ) : (
+                          <div className="text-sm text-gray-500 italic">
+                            No medication details available
+                          </div>
+                        )}
+                      </div>
                       <div className="bg-gray-50 p-2 text-right">
                         <Button
                           variant="ghost"
