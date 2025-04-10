@@ -4,59 +4,120 @@ const API_ENDPOINT = "http://13.61.182.8:5001";
 
 export async function GET(request) {
   try {
-    // Get URL parameters from the request
-    const { searchParams, pathname } = new URL(request.url);
-    const phone = searchParams.get("phone");
-    const otp = searchParams.get("otp");
-    const userInput = searchParams.get("user_input");
-    
-    // Extract the path after /api/proxy
-    const path = pathname.replace('/api/proxy', '');
-    
-    // Default to authentication endpoint if no specific path is provided
-    let targetUrl = `${API_ENDPOINT}/api/v1`;
-    
+    // Get URL and parse the path
+    const url = new URL(request.url);
+    const originalPath = url.pathname.replace("/api/proxy", "");
+
+    // Preserve any trailing slashes in the original path
+    console.log("Original request path:", originalPath);
+
+    // Extract query parameters
+    const searchParams = url.searchParams;
+
+    let targetUrl;
+
     // Handle authentication endpoint
-    if (!path || path === '/') {
-      targetUrl += `/auth/authenticate_user?phone=${phone}`;
-      if (otp) {
-        targetUrl += `&otp=${otp}`;
+    if (!originalPath || originalPath === "/") {
+      targetUrl = `${API_ENDPOINT}/api/v1/auth/authenticate_user`;
+
+      // Add query parameters
+      const queryParams = [];
+      for (const [key, value] of searchParams.entries()) {
+        queryParams.push(`${key}=${encodeURIComponent(value)}`);
       }
-    } 
-    // Handle other API endpoints
-    else {
-      targetUrl += path;
-      
-      // Add query parameters if they exist
-      if (userInput) {
-        targetUrl += `?user_input=${encodeURIComponent(userInput)}`;
+
+      if (queryParams.length > 0) {
+        targetUrl += `?${queryParams.join("&")}`;
       }
     }
-    
-    // Get authorization header from the original request
-    const authHeader = request.headers.get('authorization');
-    
-    // Set up headers for the API request
+    // Handle prescriptions endpoint specifically
+    else if (
+      originalPath === "/patient/prescriptions" ||
+      originalPath === "/patient/prescriptions/"
+    ) {
+      targetUrl = `${API_ENDPOINT}/api/v1/patient/prescriptions`;
+
+      // Add query parameters
+      const queryParams = [];
+      for (const [key, value] of searchParams.entries()) {
+        queryParams.push(`${key}=${encodeURIComponent(value)}`);
+      }
+
+      if (queryParams.length > 0) {
+        targetUrl += `?${queryParams.join("&")}`;
+      }
+    }
+    // Handle all other API endpoints
+    else {
+      // Use the EXACT path with preserved trailing slash
+      targetUrl = `${API_ENDPOINT}/api/v1${originalPath}`;
+
+      // Add any query parameters
+      const queryParams = [];
+      for (const [key, value] of searchParams.entries()) {
+        queryParams.push(`${key}=${encodeURIComponent(value)}`);
+      }
+
+      if (queryParams.length > 0) {
+        targetUrl += `?${queryParams.join("&")}`;
+      }
+    }
+
+    console.log("Final proxying request to:", targetUrl);
+
+    // Get authorization header
+    const authHeader = request.headers.get("authorization");
+
+    // Set up headers
     const headers = {
       "Content-Type": "application/json",
-      "Accept": "application/json",
+      Accept: "application/json",
     };
-    
-    // Add authorization header if it exists
+
     if (authHeader) {
       headers["Authorization"] = authHeader;
     }
 
-    // Forward the request to the actual API
+    // Make the request
+    console.log("Making request with headers:", JSON.stringify(headers));
     const response = await fetch(targetUrl, {
       method: "GET",
       headers: headers,
     });
 
-    // Get the response data
-    const data = await response.json();
+    console.log("Response status:", response.status);
 
-    // Return the response
+    // Check if response is OK
+    if (!response.ok) {
+      console.error(
+        `API error: ${response.status} ${response.statusText} for ${targetUrl}`
+      );
+
+      // Try to get more error details
+      let errorDetails = "";
+      try {
+        const errorText = await response.text();
+        errorDetails = errorText;
+        console.error("Error response body:", errorText);
+      } catch (e) {
+        console.error("Could not read error response:", e);
+      }
+
+      return NextResponse.json(
+        {
+          message: `API error: ${response.status} ${response.statusText}`,
+          requestUrl: targetUrl,
+          errorDetails: errorDetails,
+        },
+        { status: response.status }
+      );
+    }
+
+    // Parse response data
+    const data = await response.json();
+    console.log("Response parsed successfully");
+
+    // Return response
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Proxy error:", error);
@@ -69,34 +130,45 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    // Get URL parameters and path
-    const { pathname } = new URL(request.url);
-    
-    // Extract the path after /api/proxy
-    const path = pathname.replace('/api/proxy', '');
-    
-    // Build target URL
+    // Parse URL path
+    const url = new URL(request.url);
+    const path = url.pathname.replace("/api/proxy", "");
+
+    console.log("Original POST request path:", path);
+
+    // Build target URL - The key fix: Add /api/v1 prefix to the path
     const targetUrl = `${API_ENDPOINT}/api/v1${path}`;
-    
+
+    console.log("Proxying POST request to:", targetUrl);
+
     // Get authorization header
-    const authHeader = request.headers.get('authorization');
-    
+    const authHeader = request.headers.get("authorization");
+
     // Clone the request to forward it
     const formData = await request.formData();
-    
+
     // Forward the request with formData
     const response = await fetch(targetUrl, {
       method: "POST",
       headers: {
-        "Authorization": authHeader,
+        Authorization: authHeader,
       },
       body: formData,
     });
 
-    // Get the response data
+    // Check if response is OK
+    if (!response.ok) {
+      console.error(`API error: ${response.status} ${response.statusText}`);
+      return NextResponse.json(
+        { message: `API error: ${response.status} ${response.statusText}` },
+        { status: response.status }
+      );
+    }
+
+    // Parse response data
     const data = await response.json();
 
-    // Return the response
+    // Return response
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Proxy error:", error);

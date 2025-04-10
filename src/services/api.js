@@ -75,6 +75,9 @@ class ApiService {
   async sendOTP(phoneNumber) {
     try {
       const response = await fetch(`${PROXY_URL}?phone=${phoneNumber}`);
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -87,9 +90,12 @@ class ApiService {
       const response = await fetch(
         `${PROXY_URL}?phone=${phoneNumber}&otp=${otp}`
       );
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       const data = await response.json();
 
-      if (response.ok && data.session_id) {
+      if (data.session_id) {
         // Store authenticated user data
         this.setSession(data.session_id, {
           phone: phoneNumber,
@@ -105,31 +111,49 @@ class ApiService {
   }
 
   // Prescriptions
+  // In the getPrescriptions method:
   async getPrescriptions() {
     if (!this.isAuthenticated()) {
       throw new Error("User not authenticated");
     }
 
     try {
+      console.log("Calling prescriptions endpoint...");
+
+      // Remove trailing slash to match exactly what the server expects
       const response = await fetch(`${PROXY_URL}/patient/prescriptions`, {
         headers: this.getHeaders(),
       });
-      return await response.json();
+
+      console.log("Prescription response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Error response body:", errorText);
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Prescription data parsed successfully");
+      return data;
     } catch (error) {
       console.error("Error fetching prescriptions:", error);
       throw error;
     }
   }
-
   async getPrescriptionDetails(id) {
     if (!this.isAuthenticated()) {
       throw new Error("User not authenticated");
     }
 
     try {
+      // Match the exact path from Postman collection
       const response = await fetch(`${PROXY_URL}/patient/prescription/${id}`, {
         headers: this.getHeaders(),
       });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error(`Error fetching prescription details for ID ${id}:`, error);
@@ -144,9 +168,13 @@ class ApiService {
     }
 
     try {
+      // Match the exact path from Postman collection (no trailing slash)
       const response = await fetch(`${PROXY_URL}/patient/labreports`, {
         headers: this.getHeaders(),
       });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Error fetching lab reports:", error);
@@ -160,9 +188,13 @@ class ApiService {
     }
 
     try {
+      // Correct path format
       const response = await fetch(`${PROXY_URL}/patient/labreport/${id}`, {
         headers: this.getHeaders(),
       });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error(`Error fetching lab report details for ID ${id}:`, error);
@@ -177,9 +209,13 @@ class ApiService {
     }
 
     try {
+      // Correct path format
       const response = await fetch(`${PROXY_URL}/patient/health-analysis`, {
         headers: this.getHeaders(),
       });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Error fetching health analysis:", error);
@@ -194,6 +230,7 @@ class ApiService {
     }
 
     try {
+      // Correct path format with query parameters
       const response = await fetch(
         `${PROXY_URL}/patient/upload_supplements?user_input=${encodeURIComponent(
           userInput
@@ -202,6 +239,9 @@ class ApiService {
           headers: this.getHeaders(),
         }
       );
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Error uploading supplements:", error);
@@ -219,6 +259,7 @@ class ApiService {
       const formData = new FormData();
       formData.append("file", file);
 
+      // Correct path format
       const response = await fetch(`${PROXY_URL}/patient/upload_prescription`, {
         method: "POST",
         headers: {
@@ -226,6 +267,9 @@ class ApiService {
         },
         body: formData,
       });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Error uploading prescription:", error);
@@ -242,6 +286,7 @@ class ApiService {
       const formData = new FormData();
       formData.append("Labreport", file);
 
+      // Correct path format
       const response = await fetch(`${PROXY_URL}/patient/upload_labreport`, {
         method: "POST",
         headers: {
@@ -249,6 +294,9 @@ class ApiService {
         },
         body: formData,
       });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
       return await response.json();
     } catch (error) {
       console.error("Error uploading lab report:", error);
