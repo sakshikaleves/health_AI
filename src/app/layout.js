@@ -3,6 +3,7 @@ import "./globals.css";
 import BottomNavbar from "./components/BottomNavbar";
 import ProfileNavbar from "./components/Navbar";
 import { UserProvider } from "@/context/UserContext";
+import { Toaster } from "sonner";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,8 +29,9 @@ export default function RootLayout({ children }) {
       >
         <UserProvider>
           <ProfileNavbar />
-            {children}
-           <BottomNavbar />
+          {children}
+          <Toaster position="top-center" />
+          <BottomNavbar />
         </UserProvider>
       </body>
     </html>

@@ -36,9 +36,9 @@ export default function Navbar() {
           onClick={() => setIsOpen(!isOpen)}
         >
           <Avatar className="w-8 h-8 ring-2 ring-teal-500/30 ring-offset-1">
-            <AvatarImage src={currentUser.image} alt="Profile" />
+            <AvatarImage src={currentUser?.image} alt="Profile" />
           </Avatar>
-          <span className="text-gray-800 font-medium">{currentUser.name}</span>
+          <span className="text-gray-800 font-medium">{currentUser?.name}</span>
           <ChevronDown
             className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
@@ -76,7 +76,7 @@ export default function Navbar() {
                         : "ring-gray-200"
                     )}
                   >
-                    <AvatarImage src={profile.image} alt={profile.name} />
+                    <AvatarImage src={profile?.image} alt={profile?.name} />
                   </Avatar>
                   <div>
                     <p
@@ -89,7 +89,7 @@ export default function Navbar() {
                     >
                       {profile.name}
                     </p>
-                    <p className="text-sm text-gray-500">{profile.status}</p>
+                    <p className="text-sm text-gray-500">{profile?.status}</p>
                   </div>
                 </div>
                 <Settings className="w-5 h-5 text-gray-500 hover:text-teal-600 transition-colors" />

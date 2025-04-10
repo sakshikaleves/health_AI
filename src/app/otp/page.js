@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { ArrowLeft, Check, ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 import {
   Popover,
   PopoverContent,
@@ -17,65 +18,9 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-
-const countries = [
-  {
-    value: "us",
-    label: "United States",
-    code: "+1",
-    flag: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="16"
-        height="16"
-        fill="none"
-      >
-        <rect width="24" height="12" fill="#B22234" />
-        <rect y="12" width="24" height="12" fill="#FFFFFF" />
-        <rect width="10" height="10" fill="#3C3B6E" />
-      </svg>
-    ),
-  },
-  {
-    value: "in",
-    label: "India",
-    code: "+91",
-    flag: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="16"
-        height="16"
-        fill="none"
-      >
-        <rect width="24" height="8" fill="#FF9933" />
-        <rect y="8" width="24" height="8" fill="#FFFFFF" />
-        <rect y="16" width="24" height="8" fill="#138808" />
-        <circle cx="12" cy="12" r="3" fill="#000080" />
-      </svg>
-    ),
-  },
-  {
-    value: "uk",
-    label: "United Kingdom",
-    code: "+44",
-    flag: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="16"
-        height="16"
-        fill="none"
-      >
-        <rect width="24" height="24" fill="#00247D" />
-        <path d="M0 0 L24 24 M24 0 L0 24" stroke="#FFFFFF" strokeWidth="4" />
-        <path d="M12 0 V24 M0 12 H24" stroke="#FFFFFF" strokeWidth="6" />
-        <path d="M12 0 V24 M0 12 H24" stroke="#CF142B" strokeWidth="2" />
-      </svg>
-    ),
-  },
-];
+import { toast } from "sonner";
+import { countries } from "@/data/Country";
+const API_ENDPOINT = "http://13.61.182.8:5001";
 
 export default function AuthFlow() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -84,7 +29,9 @@ export default function AuthFlow() {
   const [currentStep, setCurrentStep] = useState("phone"); // "phone" or "otp"
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(30);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { changeUser } = useUser();
 
   const selectedCountry = countries.find(
     (country) => country.code === countryCode
@@ -102,26 +49,111 @@ export default function AuthFlow() {
   }, [currentStep, timer]);
 
   // Handle OTP Send
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (phoneNumber.trim()) {
-      setCurrentStep("otp");
-      setTimer(30);
+      try {
+        setIsLoading(true);
+        // Remove country code if it's in the phone number
+        const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
+        console.log("Sending OTP to:", cleanedPhoneNumber);
+        // Send OTP request to API
+        const response = await fetch(
+          `${API_ENDPOINT}/api/v1/auth/authenticate_user?phone=${cleanedPhoneNumber}`
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setCurrentStep("otp");
+          setTimer(30);
+          toast.success("OTP sent successfully");
+          // For development, if API returns the OTP directly, autofill it
+          if (data["use OTP"]) {
+            setOtp(data["use OTP"]);
+          }
+        } else {
+          toast.error(data.message || "Failed to send OTP");
+        }
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        toast.error("Failed to send OTP. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   // Handle OTP Verification
-  const handleVerifyOTP = () => {
-    if (otp.length === 6) {
-      // Normally would verify with backend
-      router.push("/login"); // Or wherever you want to go next
+  const handleVerifyOTP = async () => {
+    if (otp.length === 6 || otp.length === 4) {
+      // Support both 4 and 6 digit OTPs
+      try {
+        setIsLoading(true);
+        // Remove country code if it's in the phone number
+        const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
+
+        const response = await fetch(
+          `${API_ENDPOINT}/api/v1/auth/authenticate_user?phone=${cleanedPhoneNumber}&otp=${otp}`
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store session ID in localStorage
+          localStorage.setItem("sessionId", data.session_id);
+
+          // Update user context with authenticated state
+          changeUser({
+            isAuthenticated: true,
+            sessionId: data.session_id,
+            phone: cleanedPhoneNumber,
+          });
+
+          toast.success("Login successful");
+          router.push("/dashboard"); // Navigate to dashboard or home
+        } else {
+          toast.error(data.message || "Invalid OTP");
+        }
+      } catch (error) {
+        console.error("Error verifying OTP:", error);
+        toast.error("Failed to verify OTP. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   // Handle Resend OTP
-  const handleResendOTP = () => {
-    setOtp("");
-    setTimer(30);
-    // Logic to resend OTP
+  const handleResendOTP = async () => {
+    if (timer === 0) {
+      try {
+        setIsLoading(true);
+        const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
+
+        const response = await fetch(
+          `${API_ENDPOINT}/api/v1/auth/authenticate_user?phone=${cleanedPhoneNumber}`
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setOtp("");
+          setTimer(30);
+          toast.success("OTP resent successfully");
+          // For development, if API returns the OTP directly, autofill it
+          if (data["use OTP"]) {
+            setOtp(data["use OTP"]);
+          }
+        } else {
+          toast.error(data.message || "Failed to resend OTP");
+        }
+      } catch (error) {
+        console.error("Error resending OTP:", error);
+        toast.error("Failed to resend OTP. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   // Mobile Number Entry UI
@@ -207,9 +239,9 @@ export default function AuthFlow() {
           <Button
             className="w-full rounded-lg flex items-center gap-2 bg-[#00796B] hover:bg-[#00796c] text-white"
             onClick={handleSendOTP}
-            disabled={!phoneNumber.trim()}
+            disabled={!phoneNumber.trim() || isLoading}
           >
-            Send OTP
+            {isLoading ? "Sending..." : "Send OTP"}
           </Button>
         </div>
       </div>
@@ -264,7 +296,7 @@ export default function AuthFlow() {
               timer > 0 ? "text-gray-400" : "text-[#0F5D46]"
             }`}
             onClick={timer > 0 ? undefined : handleResendOTP}
-            disabled={timer > 0}
+            disabled={timer > 0 || isLoading}
           >
             Resend OTP
           </button>
@@ -274,9 +306,9 @@ export default function AuthFlow() {
         <Button
           className="w-full h-12 mt-8 bg-[#00796B] text-white text-lg font-medium rounded-lg hover:bg-[#00796c]"
           onClick={handleVerifyOTP}
-          disabled={otp.length !== 6}
+          disabled={(otp.length !== 6 && otp.length !== 4) || isLoading}
         >
-          Verify OTP
+          {isLoading ? "Verifying..." : "Verify OTP"}
         </Button>
       </div>
     </div>
