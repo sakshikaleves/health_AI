@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { countries } from "@/data/Country";
 const API_ENDPOINT = "http://13.61.182.8:5001";
+// Local proxy URL that will bypass CORS
+const PROXY_URL = "/api/proxy";
 
 export default function AuthFlow() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -56,9 +58,10 @@ export default function AuthFlow() {
         // Remove country code if it's in the phone number
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
         console.log("Sending OTP to:", cleanedPhoneNumber);
-        // Send OTP request to API
+
+        // Use the proxy API instead of the direct endpoint
         const response = await fetch(
-          `${API_ENDPOINT}/api/v1/auth/authenticate_user?phone=${cleanedPhoneNumber}`
+          `${PROXY_URL}?phone=${cleanedPhoneNumber}`
         );
 
         const data = await response.json();
@@ -92,8 +95,9 @@ export default function AuthFlow() {
         // Remove country code if it's in the phone number
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
 
+        // Use the proxy API for verification
         const response = await fetch(
-          `${API_ENDPOINT}/api/v1/auth/authenticate_user?phone=${cleanedPhoneNumber}&otp=${otp}`
+          `${PROXY_URL}?phone=${cleanedPhoneNumber}&otp=${otp}`
         );
 
         const data = await response.json();
@@ -130,8 +134,9 @@ export default function AuthFlow() {
         setIsLoading(true);
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
 
+        // Use the proxy API for resending OTP
         const response = await fetch(
-          `${API_ENDPOINT}/api/v1/auth/authenticate_user?phone=${cleanedPhoneNumber}`
+          `${PROXY_URL}?phone=${cleanedPhoneNumber}`
         );
 
         const data = await response.json();
