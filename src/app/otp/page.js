@@ -20,9 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { countries } from "@/data/Country";
-const API_ENDPOINT = "http://13.61.182.8:5001";
-// Local proxy URL that will bypass CORS
-const PROXY_URL = "/api/proxy";
+import apiService from "@/services/api";
 
 export default function AuthFlow() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -59,23 +57,15 @@ export default function AuthFlow() {
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
         console.log("Sending OTP to:", cleanedPhoneNumber);
 
-        // Use the proxy API instead of the direct endpoint
-        const response = await fetch(
-          `${PROXY_URL}?phone=${cleanedPhoneNumber}`
-        );
+        // Use the API service
+        const data = await apiService.sendOTP(cleanedPhoneNumber);
 
-        const data = await response.json();
-
-        if (response.ok) {
-          setCurrentStep("otp");
-          setTimer(30);
-          toast.success("OTP sent successfully");
-          // For development, if API returns the OTP directly, autofill it
-          if (data["use OTP"]) {
-            setOtp(data["use OTP"]);
-          }
-        } else {
-          toast.error(data.message || "Failed to send OTP");
+        setCurrentStep("otp");
+        setTimer(30);
+        toast.success("OTP sent successfully");
+        // For development, if API returns the OTP directly, autofill it
+        if (data["use OTP"]) {
+          setOtp(data["use OTP"]);
         }
       } catch (error) {
         console.error("Error sending OTP:", error);
@@ -95,29 +85,18 @@ export default function AuthFlow() {
         // Remove country code if it's in the phone number
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
 
-        // Use the proxy API for verification
-        const response = await fetch(
-          `${PROXY_URL}?phone=${cleanedPhoneNumber}&otp=${otp}`
-        );
+        // Use the API service
+        const data = await apiService.verifyOTP(cleanedPhoneNumber, otp);
 
-        const data = await response.json();
+        // Update user context with authenticated state
+        changeUser({
+          isAuthenticated: true,
+          sessionId: data.session_id,
+          phone: cleanedPhoneNumber,
+        });
 
-        if (response.ok) {
-          // Store session ID in localStorage
-          localStorage.setItem("sessionId", data.session_id);
-
-          // Update user context with authenticated state
-          changeUser({
-            isAuthenticated: true,
-            sessionId: data.session_id,
-            phone: cleanedPhoneNumber,
-          });
-
-          toast.success("Login successful");
-          router.push("/dashboard"); // Navigate to dashboard or home
-        } else {
-          toast.error(data.message || "Invalid OTP");
-        }
+        toast.success("Login successful");
+        router.push("/dashboard"); // Navigate to dashboard or home
       } catch (error) {
         console.error("Error verifying OTP:", error);
         toast.error("Failed to verify OTP. Please try again.");
@@ -134,23 +113,15 @@ export default function AuthFlow() {
         setIsLoading(true);
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
 
-        // Use the proxy API for resending OTP
-        const response = await fetch(
-          `${PROXY_URL}?phone=${cleanedPhoneNumber}`
-        );
+        // Use the API service
+        const data = await apiService.sendOTP(cleanedPhoneNumber);
 
-        const data = await response.json();
-
-        if (response.ok) {
-          setOtp("");
-          setTimer(30);
-          toast.success("OTP resent successfully");
-          // For development, if API returns the OTP directly, autofill it
-          if (data["use OTP"]) {
-            setOtp(data["use OTP"]);
-          }
-        } else {
-          toast.error(data.message || "Failed to resend OTP");
+        setOtp("");
+        setTimer(30);
+        toast.success("OTP resent successfully");
+        // For development, if API returns the OTP directly, autofill it
+        if (data["use OTP"]) {
+          setOtp(data["use OTP"]);
         }
       } catch (error) {
         console.error("Error resending OTP:", error);
@@ -298,8 +269,8 @@ export default function AuthFlow() {
           Didn&apos;t receive OTP?{" "}
           <button
             className={`font-semibold ${
-              timer > 0 ? "text-gray-400" : "text-[#0F5D46]"
-            }`}
+              timer > 0 ? "text-gray-400" : "text-[#0F5D46]"}
+            `}
             onClick={timer > 0 ? undefined : handleResendOTP}
             disabled={timer > 0 || isLoading}
           >
