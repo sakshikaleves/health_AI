@@ -20,7 +20,7 @@ import {
   PenTool,
   Pill,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDate } from "date-fns";
 import { toast } from "sonner";
 
 const PrescriptionDetail = () => {
@@ -159,167 +159,83 @@ const PrescriptionDetail = () => {
     : [];
 
   return (
-    <div className="max-w-md mx-auto p-4 pb-16 bg-slate-50 min-h-screen">
-      <Button
-        variant="ghost"
-        className="mb-4 pl-0 flex items-center text-gray-700"
-        onClick={() => router.push("/records")}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Records
-      </Button>
+    <div className="max-w-md mx-auto p-4 pb-16 bg-gray-50 min-h-screen">
+      <BackButton onClick={() => router.push("/records")} />
 
       {prescription && (
         <>
-          <Card className="mb-4 shadow-sm border border-gray-100">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl font-bold text-gray-800">
-                Prescription
-              </CardTitle>
-              <CardDescription>
-                {prescription.reference_number &&
-                  `#${prescription.reference_number}`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-sm text-gray-700">
-                    {formatDate(prescription.prescription_date)}
-                  </span>
-                </div>
+          {/* Main prescription info */}
+          <PrescriptionCard prescription={prescription} />
 
-                {prescription.Doctor && (
-                  <div className="flex items-start">
-                    <User className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
-                    <div>
-                      <span className="text-sm font-medium text-gray-700 block">
-                        Dr. {prescription.Doctor.name}
-                      </span>
-                      {prescription.Doctor.specialty && (
-                        <span className="text-xs text-gray-600">
-                          {prescription.Doctor.specialty}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
+          {/* Drug & Food Interactions Section */}
+          <DrugInteractionsCard
+            interactionsHtml={prescription.PrescribedDrugInteractions}
+          />
 
-                {prescription.follow_up_date && (
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="text-sm text-gray-700">
-                      Follow-up: {formatDate(prescription.follow_up_date)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Medications */}
-          {medications.length > 0 && (
-            <Card className="mb-4 shadow-sm border border-gray-100">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-md font-medium">
-                  Medications
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {medications.map((medication, index) => (
-                    <div
-                      key={index}
-                      className="border-b border-gray-100 pb-3 last:border-0 last:pb-0"
-                    >
-                      <div className="flex items-start">
-                        <Pill className="h-4 w-4 mr-2 text-gray-500 mt-1" />
-                        <div>
-                          <div className="font-medium text-sm">
-                            {medication.name}
-                          </div>
-                          {medication.instructions && (
-                            <div className="text-xs text-gray-600 mt-1">
-                              {medication.instructions}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notes */}
-          {prescription.notes && (
-            <Card className="mb-4 shadow-sm border border-gray-100">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-md font-medium">
+          {/* Notes or Empty State */}
+          {prescription.notes && prescription.notes !== "-" ? (
+            <Card className="mb-5 border-0 shadow-md overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
+                <h2 className="text-white text-lg font-semibold flex items-center">
+                  <PenTool className="h-4 w-4 mr-2" />
                   Doctor's Notes
-                </CardTitle>
-              </CardHeader>
+                </h2>
+              </div>
               <CardContent>
-                <div className="flex items-start">
-                  <PenTool className="h-4 w-4 mr-2 text-gray-500 mt-1" />
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
-                    {prescription.notes}
-                  </p>
-                </div>
+                <p className="text-gray-700 whitespace-pre-line">
+                  {prescription.notes}
+                </p>
               </CardContent>
             </Card>
+          ) : (
+            <EmptyNotes />
           )}
 
-          {/* Patient Information */}
-          {prescription.Patient && (
-            <Card className="shadow-sm border border-gray-100">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-md font-medium">
-                  Patient Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Name:</span>
-                    <span className="text-gray-700">
-                      {prescription.Patient.first_name}{" "}
-                      {prescription.Patient.last_name}
-                    </span>
-                  </div>
+          {/* Additional Actions */}
+          <div className="flex flex-col space-y-3 mt-8">
+            <Button
+              className="w-full bg-teal-600 hover:bg-teal-700 text-white py-6 rounded-xl shadow-md"
+              onClick={() => window.print()}
+            >
+              <div className="flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="font-semibold">Print Prescription</span>
+              </div>
+            </Button>
 
-                  {prescription.Patient.gender && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Gender:</span>
-                      <span className="text-gray-700">
-                        {prescription.Patient.gender}
-                      </span>
-                    </div>
-                  )}
-
-                  {prescription.Patient.date_of_birth && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Date of Birth:</span>
-                      <span className="text-gray-700">
-                        {formatDate(prescription.Patient.date_of_birth)}
-                      </span>
-                    </div>
-                  )}
-
-                  {prescription.Patient.primary_phone && (
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Phone:</span>
-                      <span className="text-gray-700">
-                        {prescription.Patient.primary_phone}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            <Button
+              variant="outline"
+              className="w-full border-gray-300 py-6 rounded-xl"
+              onClick={() =>
+                router.push(`/shared/prescription/${prescription.id}`)
+              }
+            >
+              <div className="flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 mr-2 text-gray-600"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                </svg>
+                <span className="font-semibold text-gray-700">
+                  Share Prescription
+                </span>
+              </div>
+            </Button>
+          </div>
         </>
       )}
     </div>
@@ -327,3 +243,145 @@ const PrescriptionDetail = () => {
 };
 
 export default PrescriptionDetail;
+
+// PrescriptionCard - Main information card
+const PrescriptionCard = ({ prescription }) => {
+  return (
+    <Card className="mb-5 overflow-hidden border-0 shadow-md">
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-5">
+        <h2 className="text-white text-xl font-bold flex items-center">
+          <FileText className="h-5 w-5 mr-2" /> 
+          Prescription #{prescription.id}
+        </h2>
+      
+      </div>
+      <CardContent className="p-0">
+        {/* Doctor information */}
+        <div className="p-4 border-b border-gray-100 bg-white">
+          <div className="flex items-start">
+            <div className="bg-teal-50 p-2 rounded-full">
+              <User className="h-5 w-5 text-teal-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="font-medium text-gray-800">Doctor Information</h3>
+              <p className="text-sm text-gray-600 mt-1">{prescription.Doctor.name}</p>
+              
+              {prescription.Doctor.registration_number && prescription.Doctor.registration_number !== "-" && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Reg: {prescription.Doctor.registration_number}
+                </p>
+              )}
+              
+              {prescription.Doctor.primary_phone && prescription.Doctor.primary_phone !== "-" && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Phone: {prescription.Doctor.primary_phone}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Patient information */}
+        <div className="p-4 bg-gray-50">
+          <div className="flex items-start">
+            <div className="bg-white p-2 rounded-full shadow-sm">
+              <User className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="ml-3">
+              <h3 className="font-medium text-gray-800">Patient</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {prescription.Patient.first_name} {prescription.Patient.last_name}
+              </p>
+              
+              {prescription.Patient.primary_phone && prescription.Patient.primary_phone !== "-" && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Phone: {prescription.Patient.primary_phone}
+                </p>
+              )}
+              
+              {prescription.Patient.gender && prescription.Patient.gender !== "-" && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Gender: {prescription.Patient.gender}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// DrugInteractionsCard - Display drug and food interactions
+const DrugInteractionsCard = ({ interactionsHtml }) => {
+  if (!interactionsHtml || interactionsHtml === "-") return null;
+  
+  return (
+    <Card className="mb-5 border-0 shadow-md overflow-hidden rounded-xl">
+      <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4">
+        <h2 className="text-white text-lg font-semibold flex items-center">
+          <div className="bg-white p-1.5 rounded-full shadow-md mr-3 flex items-center justify-center">
+            <Pill className="h-4 w-4 text-amber-600" />
+          </div>
+          Drug & Food Interactions
+        </h2>
+      </div>
+      <CardContent className="p-0">
+        <div className="bg-gradient-to-b from-amber-50 to-white">
+          {interactionsHtml ? (
+            <div 
+              className="prose prose-sm max-w-none text-gray-700 p-5 prose-headings:font-medium prose-h3:text-base prose-h2:text-lg prose-li:my-1 prose-p:my-2 prose-strong:text-amber-700 prose-strong:font-medium"
+              dangerouslySetInnerHTML={{ __html: interactionsHtml }}
+            />
+          ) : (
+            <div className="p-5 text-center">
+              <div className="bg-amber-100 rounded-full w-12 h-12 mx-auto flex items-center justify-center mb-3">
+                <Pill className="h-5 w-5 text-amber-600" />
+              </div>
+              <p className="text-gray-600">No interaction information available</p>
+            </div>
+          )}
+        </div>
+        <div className="px-4 py-3 bg-amber-50 border-t border-amber-100">
+          <div className="flex items-center text-xs text-amber-800">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Information about potential interactions between prescribed medications and food</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// EmptyNotes - Display when no notes are available
+const EmptyNotes = () => (
+  <Card className="mb-5 border-0 shadow-sm">
+    <CardContent className="py-8">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <PenTool className="h-6 w-6 text-gray-400" />
+        </div>
+        <h3 className="text-gray-600 font-medium mb-1">No Notes Available</h3>
+        <p className="text-sm text-gray-500">
+          The doctor didn't provide additional notes for this prescription
+        </p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+// BackButton - Enhanced back button with animation
+const BackButton = ({ onClick }) => (
+  <Button
+    variant="outline"
+    className="mb-5 pl-3 flex items-center transition-all hover:translate-x-1 hover:bg-teal-50"
+    onClick={onClick}
+  >
+    <ArrowLeft className="mr-2 h-4 w-4" />
+    <span className="font-medium">Back to Records</span>
+  </Button>
+);
+
+// Main component update
