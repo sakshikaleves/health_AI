@@ -16,7 +16,6 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { format, isSameDay, formatDistanceToNow } from "date-fns";
-import apiService from "@/services/api";
 import { toast } from "sonner";
 
 // ============== Helper Functions ==============
@@ -701,8 +700,6 @@ const PrescriptionsList = ({ prescriptions }) => {
   );
 };
 
-
-
 // Main Component
 const RecordsPage = () => {
   const [selectedTab, setSelectedTab] = useState("prescription");
@@ -717,12 +714,6 @@ const RecordsPage = () => {
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
-      if (!apiService.isAuthenticated()) {
-        console.log("Not authenticated, redirecting to login");
-        setError("User not authenticated. Please log in.");
-        return;
-      }
-
       setIsLoading(true);
       setError(null);
 
@@ -730,7 +721,6 @@ const RecordsPage = () => {
         // Fetch prescriptions
         if (selectedTab === "prescription") {
           console.log("Fetching prescriptions data...");
-          console.log("Session ID:", apiService.sessionId);
 
           const timeoutId = setTimeout(() => {
             if (isLoading) {
@@ -740,18 +730,30 @@ const RecordsPage = () => {
 
           try {
             let prescriptionData;
+
+            // Primary fetch approach using proxy API
             try {
-              const res = await fetch("/api/proxy/prescription");
+              const res = await fetch("/api/proxy/prescription", {
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                },
+              });
+
+              if (!res.ok) {
+                throw new Error(`API returned status ${res.status}`);
+              }
+
               prescriptionData = await res.json();
             } catch (apiError) {
-              console.error("API service error:", apiError);
-              console.log("Trying direct fetch as fallback...");
+              console.error("Primary API fetch error:", apiError);
+              console.log("Trying fallback fetch method...");
 
+              // Fallback approach
               const response = await fetch(
                 `/api/proxy/patient/prescriptions/`,
                 {
                   headers: {
-                    Authorization: `Bearer ${apiService.sessionId}`,
                     "Content-Type": "application/json",
                     Accept: "application/json",
                   },
@@ -771,6 +773,8 @@ const RecordsPage = () => {
 
             console.log("Prescription data received:", prescriptionData);
             setPrescriptions(prescriptionData.Prescriptions || []);
+
+            // Update user data from the prescription response
             setUserData({
               firstName: prescriptionData.first_name || "",
               lastName: prescriptionData.last_name || "",
@@ -780,7 +784,10 @@ const RecordsPage = () => {
             });
           } catch (prescriptionError) {
             clearTimeout(timeoutId);
-            console.error("Prescription fetch error:", prescriptionError);
+            console.error(
+              "All prescription fetch methods failed:",
+              prescriptionError
+            );
 
             // Emergency fallback: Use dummy data
             console.log("Using emergency fallback data");
@@ -801,17 +808,37 @@ const RecordsPage = () => {
         // Fetch lab reports
         else if (selectedTab === "lab-report") {
           console.log("Fetching lab reports data...");
-          const res = await fetch("/api/proxy/labreports");
-          const labReportData = await res.json();
-          console.log("Lab Report data received:", labReportData);
-          setLabReports(labReportData.LabTestReports || []);
-          setUserData({
-            firstName: labReportData.first_name || "",
-            lastName: labReportData.last_name || "",
-            gender: labReportData.gender || "-",
-            phone: labReportData.primary_phone || "",
-            id: labReportData.id,
-          });
+
+          try {
+            const res = await fetch("/api/proxy/labreports", {
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+            });
+
+            if (!res.ok) {
+              throw new Error(`API returned status ${res.status}`);
+            }
+
+            const labReportData = await res.json();
+            console.log("Lab Report data received:", labReportData);
+            setLabReports(labReportData.LabTestReports || []);
+
+            // Update user data from the lab report response
+            setUserData({
+              firstName: labReportData.first_name || "",
+              lastName: labReportData.last_name || "",
+              gender: labReportData.gender || "-",
+              phone: labReportData.primary_phone || "",
+              id: labReportData.id,
+            });
+          } catch (labError) {
+            console.error("Lab reports fetch error:", labError);
+            setError(`Failed to fetch lab reports: ${labError.message}`);
+
+            // You could add a fallback for lab reports similar to prescriptions if needed
+          }
         }
       } catch (err) {
         console.error("Error fetching data:", err);
