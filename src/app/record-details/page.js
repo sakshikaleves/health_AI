@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function MedicationDetail() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen  bg-gray-50">
       {/* Header */}
       <header className="bg-white px-4 py-3 flex items-center border-b">
         <Button variant="ghost" size="icon" className="mr-2">

@@ -848,7 +848,7 @@ const RecordsPage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-slate-50 min-h-screen pb-32">
+    <div className="max-w-md mx-auto bg-slate-50 pt-24 min-h-screen pb-32">
       <div className="px-4">
         <UserProfile userData={userData} />
 
