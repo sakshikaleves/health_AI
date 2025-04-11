@@ -1,22 +1,43 @@
-// app/api/proxy/labreports/route.js
+import axios from "axios";
 
 export async function GET(request) {
   try {
-    const res = await fetch(
-      "http://13.61.182.8:5001/api/v1/patient/labreports",
-      {
-        method: "GET",
-        headers: {
-          Cookie:
-            "session=eyJwYXRpZW50X2lkIjo4LCJzZXNzaW9uX2lkIjoiYWI4YmFkMTEtNzg2Zi00ZmUyLThhMGYtODYzMzFiNDk2MmJjIn0.Z_fM3g.wcmYMnGaz5dFUO8daRWIm9Qs3ZY",
-        },
-      }
-    );
+    // Get the cookie from the incoming request
+    const cookieHeader = request.headers.get("cookie");
 
-    const data = await res.json(); // Use .text() if it's not JSON
-    return new Response(JSON.stringify(data), { status: 200 });
+    if (!cookieHeader) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Create config object with headers including the forwarded cookie
+    const config = {
+      method: "GET",
+      url: "http://13.61.182.8:5001/api/v1/patient/labreports",
+      headers: {
+        Cookie: cookieHeader,
+      },
+      withCredentials: true, // Ensures cookies are sent with the request
+    };
+
+    // Make the request using axios
+    const response = await axios(config);
+
+    // Return the data from the response
+    return new Response(JSON.stringify(response.data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Lab Reports Fetch Error:", error);
-    return new Response("Internal Server Error", { status: 500 });
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Check, ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import axios from "axios";
 import {
   Popover,
   PopoverContent,
@@ -20,7 +21,9 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { countries } from "@/data/Country";
-import apiService from "@/services/api";
+
+// Use local API routes for authentication
+const API_BASE_URL = "/api/auth";
 
 export default function AuthFlow() {
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -57,19 +60,25 @@ export default function AuthFlow() {
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
         console.log("Sending OTP to:", cleanedPhoneNumber);
 
-        // Use the API service
-        const data = await apiService.sendOTP(cleanedPhoneNumber);
+        // Use axios with local API route
+        const response = await axios.get(`${API_BASE_URL}/authenticate`, {
+          params: { phone: cleanedPhoneNumber },
+        });
 
         setCurrentStep("otp");
         setTimer(30);
         toast.success("OTP sent successfully");
+
         // For development, if API returns the OTP directly, autofill it
-        if (data["use OTP"]) {
-          setOtp(data["use OTP"]);
+        if (response.data && response.data["use OTP"]) {
+          setOtp(response.data["use OTP"]);
         }
       } catch (error) {
         console.error("Error sending OTP:", error);
-        toast.error("Failed to send OTP. Please try again.");
+        toast.error(
+          error.response?.data?.message ||
+            "Failed to send OTP. Please try again."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -85,13 +94,18 @@ export default function AuthFlow() {
         // Remove country code if it's in the phone number
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
 
-        // Use the API service
-        const data = await apiService.verifyOTP(cleanedPhoneNumber, otp);
+        // Use axios with local API route
+        const response = await axios.get(`${API_BASE_URL}/verify`, {
+          params: {
+            phone: cleanedPhoneNumber,
+            otp: otp,
+          },
+        });
 
         // Update user context with authenticated state
         changeUser({
           isAuthenticated: true,
-          sessionId: data.session_id,
+          sessionId: response.data.session_id,
           phone: cleanedPhoneNumber,
         });
 
@@ -99,7 +113,10 @@ export default function AuthFlow() {
         router.push("/dashboard"); // Navigate to dashboard or home
       } catch (error) {
         console.error("Error verifying OTP:", error);
-        toast.error("Failed to verify OTP. Please try again.");
+        toast.error(
+          error.response?.data?.message ||
+            "Failed to verify OTP. Please try again."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -113,19 +130,25 @@ export default function AuthFlow() {
         setIsLoading(true);
         const cleanedPhoneNumber = phoneNumber.replace(/^\+\d+\s*/, "");
 
-        // Use the API service
-        const data = await apiService.sendOTP(cleanedPhoneNumber);
+        // Use axios with local API route
+        const response = await axios.get(`${API_BASE_URL}/authenticate`, {
+          params: { phone: cleanedPhoneNumber },
+        });
 
         setOtp("");
         setTimer(30);
         toast.success("OTP resent successfully");
+
         // For development, if API returns the OTP directly, autofill it
-        if (data["use OTP"]) {
-          setOtp(data["use OTP"]);
+        if (response.data && response.data["use OTP"]) {
+          setOtp(response.data["use OTP"]);
         }
       } catch (error) {
         console.error("Error resending OTP:", error);
-        toast.error("Failed to resend OTP. Please try again.");
+        toast.error(
+          error.response?.data?.message ||
+            "Failed to resend OTP. Please try again."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -269,7 +292,8 @@ export default function AuthFlow() {
           Didn&apos;t receive OTP?{" "}
           <button
             className={`font-semibold ${
-              timer > 0 ? "text-gray-400" : "text-[#0F5D46]"}
+              timer > 0 ? "text-gray-400" : "text-[#0F5D46]"
+            }
             `}
             onClick={timer > 0 ? undefined : handleResendOTP}
             disabled={timer > 0 || isLoading}

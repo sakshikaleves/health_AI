@@ -5,14 +5,13 @@ function page() {
     useEffect(() => {
       const fetchPrescription = async () => {
         try {
-          const res = await fetch("/api/proxy/prescription");
+          const res = await fetch("/api/proxy/labreports", );
           const data = await res.json(); // or res.text() if it's not JSON
           console.log(data);
         } catch (error) {
           console.error("Frontend Error:", error);
         }
       };
-
       fetchPrescription();
     }, []);
     
