@@ -110,7 +110,7 @@ export default function AuthFlow() {
         });
 
         toast.success("Login successful");
-        router.push("/dashboard"); // Navigate to dashboard or home
+        router.push("/records"); // Navigate to dashboard or home
       } catch (error) {
         console.error("Error verifying OTP:", error);
         toast.error(
