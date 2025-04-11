@@ -178,7 +178,7 @@ const PrescriptionDetail = () => {
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
                 <h2 className="text-white text-lg font-semibold flex items-center">
                   <PenTool className="h-4 w-4 mr-2" />
-                  Doctor's Notes
+                  Doctor&apos;s Notes
                 </h2>
               </div>
               <CardContent>
@@ -365,7 +365,7 @@ const EmptyNotes = () => (
         </div>
         <h3 className="text-gray-600 font-medium mb-1">No Notes Available</h3>
         <p className="text-sm text-gray-500">
-          The doctor didn't provide additional notes for this prescription
+          The doctor didn&apos;t provide additional notes for this prescription
         </p>
       </div>
     </CardContent>

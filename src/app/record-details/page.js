@@ -127,7 +127,7 @@ export default function MedicationDetail() {
 
           {/* Doctor's Note */}
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="font-medium mb-2">Doctor's Note</h3>
+            <h3 className="font-medium mb-2">Doctor&apos;s Note</h3>
             <p className="text-gray-600">NA</p>
           </div>
 
