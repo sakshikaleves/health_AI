@@ -133,7 +133,7 @@ export default function PrescriptoWelcome() {
   ];
 
   return (
-    <div className="flex items-center justify-center h-screen bg-white px-6">
+    <div className="flex items-center justify-center h-[90vh] bg-white px-6">
       <div className="max-w-md h-full w-full relative">
         {/* Render the current page */}
         <div
