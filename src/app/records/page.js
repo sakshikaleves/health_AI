@@ -273,56 +273,6 @@ const EmptyState = ({ type }) => (
 );
 
 // Summary Component with visual indicators
-const RecordsSummary = ({ count, type, mostRecent }) => {
-  const recentDate = parseDate(mostRecent);
-
-  return (
-    <Card className="bg-white shadow-sm border-0 overflow-hidden mb-5">
-      <CardContent className="p-0">
-        <div className="p-4 border-b">
-          <h3 className="font-semibold text-gray-800">Summary</h3>
-        </div>
-        <div className="px-4 py-5 flex justify-between items-center">
-          <div className="flex items-center">
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                type === "prescription" ? "bg-teal-100" : "bg-blue-100"
-              }`}
-            >
-              {type === "prescription" ? (
-                <ClipboardList className="h-6 w-6 text-teal-600" />
-              ) : (
-                <FileDigit className="h-6 w-6 text-blue-600" />
-              )}
-            </div>
-            <div className="ml-4">
-              <div className="text-2xl font-bold text-gray-800">{count}</div>
-              <div className="text-sm text-gray-500">
-                Total{" "}
-                {type === "prescription" ? "Prescriptions" : "Lab Reports"}
-              </div>
-            </div>
-          </div>
-
-          {isValidDate(recentDate) && (
-            <div className="text-right">
-              <div className="text-sm font-medium text-gray-700">
-                Most Recent
-              </div>
-              <div className="flex items-center text-sm text-gray-500 mt-1">
-                <Calendar className="h-3.5 w-3.5 mr-1" />
-                {format(recentDate, "MMM d, yyyy")}
-              </div>
-              <div className="text-xs text-teal-600 mt-1">
-                {formatDistanceToNow(recentDate, { addSuffix: true })}
-              </div>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 // Enhanced Prescription Card Component
 const PrescriptionCard = ({ prescription }) => {
@@ -436,7 +386,6 @@ const PrescriptionCard = ({ prescription }) => {
 };
 
 // Lab Report Card Component
-// Lab Report Card Component - Improved
 const LabReportCard = ({ report }) => {
   const reportDate = parseDate(report.report_date);
   const isRecent =
@@ -575,12 +524,6 @@ const LabReportsList = ({ labReports }) => {
 
   return (
     <div>
-      <RecordsSummary
-        count={labReports.length}
-        type="lab-report"
-        mostRecent={mostRecent}
-      />
-
       {/* Sorting controls */}
       <div className="flex items-center justify-between mb-4 bg-white p-2 rounded-lg shadow-sm">
         <div className="text-sm text-gray-700 font-medium">
@@ -684,12 +627,6 @@ const PrescriptionsList = ({ prescriptions }) => {
 
   return (
     <div>
-      <RecordsSummary
-        count={prescriptions.length}
-        type="prescription"
-        mostRecent={mostRecent}
-      />
-
       {prescriptions.map((prescription, index) => (
         <PrescriptionCard
           key={prescription.id || index}
