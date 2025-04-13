@@ -170,24 +170,24 @@ export default function Scanner() {
       transition={{ duration: 0.5 }}
       className="flex flex-col h-full"
     >
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Select Document Type</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-8 bg-gradient-to-r from-teal-600 to-indigo-600 bg-clip-text text-transparent">Select Document Type</h2>
       
-      <div className="grid grid-cols-1 gap-6 mb-6">
+      <div className="grid grid-cols-1 gap-8 mb-8">
         <motion.div
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.03, y: -5 }}
           whileTap={{ scale: 0.98 }}
-          className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+          className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:border-teal-200 transition-all duration-300 hover:shadow-teal-100/50"
           onClick={() => setRecordType('prescription')}
         >
-          <div className="p-6 flex items-center space-x-4">
-            <div className="bg-teal-50 p-3 rounded-full">
-              <FileText size={24} className="text-teal-600" />
+          <div className="p-7 flex items-center space-x-5">
+            <div className="bg-gradient-to-br from-teal-500 to-teal-600 p-4 rounded-xl shadow-md">
+              <FileText size={28} className="text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-800">Prescription</h3>
-              <p className="text-sm text-gray-500">Upload your medical prescriptions</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">Prescription</h3>
+              <p className="text-gray-500">Upload your medical prescriptions for easy access</p>
             </div>
-            <div className="text-teal-600">
+            <div className="bg-teal-50 p-3 rounded-full text-teal-600 transform transition-transform group-hover:translate-x-1">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -196,20 +196,20 @@ export default function Scanner() {
         </motion.div>
         
         <motion.div
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ scale: 1.03, y: -5 }}
           whileTap={{ scale: 0.98 }}
-          className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100"
+          className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:border-indigo-200 transition-all duration-300 hover:shadow-indigo-100/50"
           onClick={() => setRecordType('labrecord')}
         >
-          <div className="p-6 flex items-center space-x-4">
-            <div className="bg-indigo-50 p-3 rounded-full">
-              <FlaskConical size={24} className="text-indigo-600" />
+          <div className="p-7 flex items-center space-x-5">
+            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 p-4 rounded-xl shadow-md">
+              <FlaskConical size={28} className="text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-800">Lab Record</h3>
-              <p className="text-sm text-gray-500">Upload your medical test reports</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-1">Lab Record</h3>
+              <p className="text-gray-500">Upload your medical test reports for tracking</p>
             </div>
-            <div className="text-indigo-600">
+            <div className="bg-indigo-50 p-3 rounded-full text-indigo-600 transform transition-transform group-hover:translate-x-1">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -218,11 +218,23 @@ export default function Scanner() {
         </motion.div>
       </div>
       
-      <div className="mt-auto">
-        <div className="bg-gray-50 rounded-xl p-4 text-center text-sm text-gray-500">
-          Your medical records are securely stored and accessible anytime
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="mt-auto"
+      >
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl p-5 border border-gray-100 shadow-sm">
+          <div className="flex items-center justify-center space-x-3">
+            <div className="p-2 bg-white rounded-full shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-teal-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-600 font-medium">Your medical records are securely stored and accessible anytime</p>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 
@@ -307,7 +319,7 @@ export default function Scanner() {
   );
 
   return (
-    <div className="max-w-lg mx-auto p-4 min-h-screen flex flex-col bg-gray-50">
+    <div className="max-w-lg mx-auto p-4 min-h-screen pt-24 flex flex-col bg-gray-50">
       {!recordType && renderInitialSelection()}
       {recordType && !showCamera && !isAnalyzing && renderUploadMethodSelection()}
       
