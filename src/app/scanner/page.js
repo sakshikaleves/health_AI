@@ -319,7 +319,7 @@ export default function Scanner() {
   );
 
   return (
-    <div className="max-w-lg mx-auto p-4 min-h-screen  flex flex-col bg-gray-50">
+    <div className="max-w-lg mx-auto p-4 min-h-screen pt-10 flex flex-col bg-gray-50">
       {!recordType && renderInitialSelection()}
       {recordType && !showCamera && !isAnalyzing && renderUploadMethodSelection()}
       

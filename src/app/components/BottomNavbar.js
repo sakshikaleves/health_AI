@@ -1,13 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Home, FileText, Sparkles, Bell } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { Camera } from "lucide-react";
 
 const BottomNavbar = () => {
-  const [activeTab, setActiveTab] = useState("records");
   const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState("records");
+
+  // Set active tab based on current path
+  useEffect(() => {
+    const path = pathname.split("/")[1] || "home";
+    if (navItems.some((item) => item.id === path)) {
+      setActiveTab(path);
+    }
+  }, [pathname]);
+
   const navItems = [
     {
       id: "home",
@@ -20,6 +30,12 @@ const BottomNavbar = () => {
       label: "Records",
     },
     {
+      id: "scanner",
+      icon: "/logo.png",
+      label: "Scan",
+      isSpecial: true,
+    },
+    {
       id: "ai",
       icon: "/navbar/ai.png",
       label: "AI",
@@ -27,74 +43,99 @@ const BottomNavbar = () => {
     {
       id: "notification",
       icon: "/navbar/notification.png",
-      label: "Notification",
+      label: "Notify",
     },
-  // Don't show the navbar on the login and ai pages
   ];
+
+  // Don't show the navbar on certain pages
   if (
     pathname === "/login" ||
     pathname === "/welcome" ||
     pathname === "/" ||
-    pathname === "/otp" ||
-    pathname === "/scanner"
+    pathname === "/otp"
   )
     return null;
+
   return (
-    <div className="fixed bottom-2 z- left-0 right-0 px-4 px- z-50">
-      <div className="flex justify-around p-2 pl-4 bg-white pr-4 rounded-full shadow-2xl items-center">
+    <div className="fixed bottom-2 left-0 right-0 px-3 z-50 max-w-lg mx-auto">
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex justify-around bg-white rounded-full shadow-lg items-center relative"
+        style={{ boxShadow: "0 -2px 10px rgba(0,0,0,0.05)" }}
+      >
         {navItems.map((item) => (
           <Link
             key={item.id}
             href={`/${item.id}`}
-            className="flex flex-col items-center max-w-md justify-center"
+            className={`
+              flex flex-col items-center justify-center py-1.5 px-3 relative
+              ${item.isSpecial ? "mx-1" : ""}
+            `}
             onClick={() => setActiveTab(item.id)}
           >
-            <div
-              className={`
-              relative  p-1 w-full flex items-center justify-center rounded-full
-              ${
-                activeTab === item.id
-                  ? " bg-[#f1fffd] text-teal-500"
-                  : "text-gray-400"
-              }
-            `}
-            >
-              <Image
-                src={item.icon}
-                alt={item.label}
-                width={26}
-                height={26}
-                className={`${
-                  activeTab === item.id ? "text-teal-500" : "text-gray-400"
-                }`}
-              />
-            </div>
-            <span
-              className={`
-              text-sm  font-semibold
-              ${activeTab === item.id ? "text-teal-500" : ""}
-            `}
-            >
-              {item.label}
-            </span>
-            {activeTab === item.id && (
-              <div className="absolute bottom-0 w-[54px] h-[4px] bg-teal-500 rounded-full"></div>
+            {item.isSpecial ? (
+              <motion.div
+                whileTap={{ scale: 0.9 }}
+                className="flex flex-col items-center"
+              >
+                <div className="w-10 h-10 bg-gradient-to-r from-teal-600 to-teal-500 rounded-full flex items-center justify-center shadow-md">
+                  <Image
+                    src={item.icon}
+                    alt={item.label}
+                    width={24}
+                    height={24}
+                    className="rounded-full"
+                  />
+                </div>
+                <span className="text-[10px] font-medium mt-0.5 text-teal-600">
+                  {item.label}
+                </span>
+              </motion.div>
+            ) : (
+              <>
+                <div
+                  className={`
+                    relative p-1 flex items-center justify-center
+                    ${activeTab === item.id ? "text-teal-500" : "text-gray-400"}
+                  `}
+                >
+                  <Image
+                    src={item.icon}
+                    alt={item.label}
+                    width={22}
+                    height={22}
+                    className="transition-all duration-200"
+                    style={{
+                      opacity: activeTab === item.id ? 1 : 0.7,
+                      transform:
+                        activeTab === item.id ? "scale(1.1)" : "scale(1)",
+                    }}
+                  />
+                </div>
+                <span
+                  className={`
+                    text-[10px] font-medium transition-colors duration-200
+                    ${activeTab === item.id ? "text-teal-500" : "text-gray-500"}
+                  `}
+                >
+                  {item.label}
+                </span>
+
+                {/* Active indicator */}
+                {activeTab === item.id && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -bottom-1 w-[4px] h-[4px] bg-teal-500 rounded-full"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </>
             )}
           </Link>
         ))}
-
-        <div className="absolute left-1/2 -top-[32px] -translate-x-1/2 bg-black w-[58px] h-[58px] rounded-full flex items-center justify-center shadow-lg">
-          <Link href={"/scanner"}>
-            <Image
-              src="/logo.png"
-              alt="avatar"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          </Link>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
