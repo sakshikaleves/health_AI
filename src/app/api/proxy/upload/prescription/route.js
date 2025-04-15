@@ -1,5 +1,6 @@
 import axios from "axios";
 import { NextResponse } from "next/server";
+import { PATIENT_ENDPOINT } from "@/config/api";
 
 export async function POST(request) {
   try {
@@ -36,29 +37,12 @@ export async function POST(request) {
       );
     }
 
-    // Validate file type
-    const validTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/jpg",
-      "application/pdf",
-    ];
-    if (!validTypes.includes(file.type)) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid file type. Please upload an image (JPG, PNG) or PDF file.",
-        },
-        { status: 400 }
-      );
-    }
-
     // Append the file to the API FormData
     apiFormData.append("file", file);
 
     // Make the request to the external API
     const response = await axios.post(
-      "http://13.61.182.8:5001/api/v1/patient/upload_prescription",
+      `${PATIENT_ENDPOINT}/upload_prescription`,
       apiFormData,
       {
         headers: {
@@ -90,16 +74,6 @@ export async function POST(request) {
       return NextResponse.json(
         { error: "Your session has expired. Please log in again." },
         { status: 401 }
-      );
-    }
-
-    if (error.response?.status === 413) {
-      return NextResponse.json(
-        {
-          error:
-            "File is too large for the server to process. Please upload a smaller file.",
-        },
-        { status: 413 }
       );
     }
 

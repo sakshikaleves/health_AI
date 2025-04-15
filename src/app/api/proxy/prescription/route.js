@@ -1,4 +1,5 @@
 import axios from "axios";
+import { PATIENT_ENDPOINT } from "@/config/api";
 
 export async function GET(request) {
   try {
@@ -18,7 +19,7 @@ export async function GET(request) {
     // Create config object with headers including the forwarded cookie
     const config = {
       method: "GET",
-      url: "http://13.61.182.8:5001/api/v1/patient/prescriptions",
+      url: `${PATIENT_ENDPOINT}/prescriptions`,
       headers: {
         Cookie: cookieHeader,
       },

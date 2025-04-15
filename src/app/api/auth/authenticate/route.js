@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { AUTH_ENDPOINT } from "@/config/api";
 
 export async function GET(request) {
   try {
@@ -17,7 +18,7 @@ export async function GET(request) {
 
     // Make the request to the external API
     const response = await fetch(
-      `http://13.61.182.8:5001/api/v1/auth/authenticate_user?phone=${phone}`,
+      `${AUTH_ENDPOINT}/authenticate_user?phone=${phone}`,
       {
         method: "GET",
         headers: {
