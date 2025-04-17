@@ -277,27 +277,29 @@ const EmptyState = ({ type }) => (
 // Enhanced Prescription Card Component
 const PrescriptionCard = ({ prescription }) => {
   const prescriptionDate = parseDate(prescription.prescription_date);
-  const medications = extractMedicationDetails(prescription.notes);
-  const hasDetails = medications.length > 0;
+
+  const handleCardClick = () => {
+    window.location.href = `/prescription/${prescription.id}`;
+  };
 
   return (
-    <Card className="mb-4 overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+    <Card
+      className="mb-4 overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-teal-200"
+      onClick={handleCardClick}
+    >
       <CardContent className="p-0">
         <div className="p-4">
-          <div className="flex justify-between items-start mb-3">
+          <div className="flex justify-between items-start">
             <div className="flex items-center">
               <div className="bg-teal-50 p-2 rounded-md">
                 <ClipboardList className="h-5 w-5 text-teal-600" />
               </div>
               <div className="ml-2">
                 <div className="font-medium text-gray-800">
-                  Prescription #{prescription.id}
+                  {prescription.Doctor && prescription.Doctor.name !== "Dr."
+                    ? `Dr. ${prescription.Doctor.name}`
+                    : "Prescription"}
                 </div>
-                {prescription.Doctor && prescription.Doctor.name !== "Dr." && (
-                  <div className="text-xs text-gray-500">
-                    Dr. {prescription.Doctor.name}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -311,74 +313,13 @@ const PrescriptionCard = ({ prescription }) => {
                   isSameDay(prescriptionDate, new Date()) &&
                   " (Today)"}
               </div>
-
-              {prescription.Doctor &&
-                prescription.Doctor.primary_phone &&
-                prescription.Doctor.primary_phone !== "-" && (
-                  <div className="text-xs text-gray-500 mt-1">
-                    {prescription.Doctor.primary_phone}
-                  </div>
-                )}
             </div>
           </div>
-
-          {/* Registration information if available */}
-          {prescription.Doctor &&
-            prescription.Doctor.registration_number &&
-            prescription.Doctor.registration_number !== "-" && (
-              <div className="mb-3 text-xs text-gray-500 bg-gray-50 p-2 rounded">
-                Registration: {prescription.Doctor.registration_number}
-              </div>
-            )}
-
-          {/* Medications list with improved styling */}
-          {hasDetails ? (
-            <div className="mt-4 space-y-3">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Medications
-              </h4>
-              <div className="bg-gray-50 rounded-lg p-3">
-                {medications.map((med, medIndex) => (
-                  <div
-                    key={medIndex}
-                    className={`flex items-start ${
-                      medIndex > 0 ? "mt-3 pt-3 border-t border-gray-100" : ""
-                    }`}
-                  >
-                    <div className="p-2 rounded-md mr-3 bg-white shadow-sm border border-gray-100">
-                      <div className="w-6 h-6 flex items-center justify-center">
-                        <span>{getMedicationEmoji(med.type)}</span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm text-gray-700">{med.text}</div>
-                      {med.type === "advice" && (
-                        <div className="text-xs text-teal-600 mt-1">
-                          Medical Advice
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-sm text-gray-500 italic bg-gray-50 p-3 rounded-lg mt-3">
-              No medication details available for this prescription
-            </div>
-          )}
         </div>
-        <div className="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center">
-          <div className="text-xs text-gray-500">ID: {prescription.id}</div>
-          <Button
-            variant="ghost"
-            className="text-sm text-teal-700 hover:text-teal-800 hover:bg-teal-50 flex items-center"
-            onClick={() =>
-              (window.location.href = `/prescription/${prescription.id}`)
-            }
-          >
-            View Details <ArrowUpRight className="ml-1 h-3 w-3" />
-          </Button>
+        <div className="bg-gray-50 p-2 border-t border-gray-100 flex justify-end items-center">
+          <div className="text-xs text-teal-600">
+            <ArrowUpRight className="h-3.5 w-3.5 inline" />
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -392,8 +333,15 @@ const LabReportCard = ({ report }) => {
     isValidDate(reportDate) &&
     (new Date() - reportDate) / (1000 * 60 * 60 * 24) < 30;
 
+  const handleCardClick = () => {
+    window.location.href = `/labreport/${report.id}`;
+  };
+
   return (
-    <Card className="mb-4 shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group">
+    <Card
+      className="mb-4 shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-blue-200"
+      onClick={handleCardClick}
+    >
       <CardContent className="p-0">
         {isRecent && (
           <div className="bg-blue-50 py-1 px-3 text-xs font-medium text-blue-700 flex items-center border-b border-blue-100">
@@ -402,7 +350,7 @@ const LabReportCard = ({ report }) => {
           </div>
         )}
         <div className="p-4">
-          <div className="flex justify-between items-start mb-3">
+          <div className="flex justify-between items-start">
             <div className="flex items-center">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-2.5 rounded-lg shadow-sm">
                 <FileDigit className="h-5 w-5 text-blue-600" />
@@ -411,14 +359,6 @@ const LabReportCard = ({ report }) => {
                 <div className="font-medium text-gray-800 group-hover:text-blue-700 transition-colors">
                   {report.Lab?.name || "Lab Report"}
                 </div>
-                {report.reference_number && report.reference_number !== "-" && (
-                  <div className="text-xs text-gray-500 mt-0.5 flex items-center">
-                    <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 mr-1">
-                      Ref:
-                    </span>
-                    {report.reference_number}
-                  </div>
-                )}
               </div>
             </div>
 
@@ -429,66 +369,11 @@ const LabReportCard = ({ report }) => {
                 : "No date"}
             </div>
           </div>
-
-          {/* Lab with better address formatting */}
-          {report.Lab?.Address && (
-            <div className="mb-3 mt-3 bg-gray-50 rounded-lg p-3">
-              <div className="flex items-start">
-                <MapPin className="h-4 w-4 mt-0.5 text-gray-400 flex-shrink-0" />
-                <div className="ml-2">
-                  <div className="text-sm text-gray-700 font-medium">
-                    {report.Lab.name}
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1 leading-relaxed">
-                    {report.Lab.Address.street}
-                    {report.Lab.Address.city && (
-                      <>
-                        <br />
-                        {report.Lab.Address.city}
-                        {report.Lab.Address.state !== "-" &&
-                          `, ${report.Lab.Address.state}`}
-                        {report.Lab.Address.zip_code !== "-" &&
-                          ` - ${report.Lab.Address.zip_code}`}
-                      </>
-                    )}
-                    {report.Lab.Address.country &&
-                      report.Lab.Address.country !== "-" && (
-                        <div className="mt-1">{report.Lab.Address.country}</div>
-                      )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Clinical Notes with improved empty state */}
-          <div className="mt-3">
-            <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-              <FileText className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
-              Clinical Notes
-            </h4>
-            {report.clinical_notes && report.clinical_notes !== "-" ? (
-              <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                {report.clinical_notes}
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500 italic bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
-                No clinical notes available
-              </div>
-            )}
-          </div>
         </div>
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-3 border-t border-gray-100 flex justify-between items-center">
-          <div className="text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full border border-gray-200">
-            ID: {report.id}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-2 border-t border-gray-100 flex justify-end items-center">
+          <div className="text-xs text-blue-600">
+            <ArrowUpRight className="h-3.5 w-3.5 inline" />
           </div>
-          <Button
-            variant="ghost"
-            className="text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 flex items-center font-medium"
-            onClick={() => (window.location.href = `/labreport/${report.id}`)}
-          >
-            View Details <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-          </Button>
         </div>
       </CardContent>
     </Card>
@@ -502,17 +387,6 @@ const LabReportsList = ({ labReports }) => {
   if (labReports.length === 0) {
     return <EmptyState type="lab-report" />;
   }
-
-  // Find most recent lab report date
-  const mostRecent = labReports.reduce((latest, current) => {
-    const currentDate = parseDate(current.report_date);
-    const latestDate = parseDate(latest);
-
-    if (!isValidDate(currentDate)) return latest;
-    if (!isValidDate(latestDate)) return current.report_date;
-
-    return currentDate > latestDate ? current.report_date : latest;
-  }, null);
 
   // Sort reports based on selected order
   const sortedReports = [...labReports].sort((a, b) => {
@@ -565,45 +439,6 @@ const LabReportsList = ({ labReports }) => {
           </div>
         ))}
       </div>
-
-      {/* Quick stats */}
-      {labReports.length >= 2 && (
-        <div className="mt-6 bg-blue-50 rounded-lg p-4 border border-blue-100">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">
-            Lab Report Analytics
-          </h4>
-          <div className="grid grid-cols-2 gap-3 text-center">
-            <div className="bg-white rounded-lg p-2 shadow-sm">
-              <div className="text-xs text-gray-500">Latest Report</div>
-              <div className="text-sm font-medium text-gray-800">
-                {isValidDate(parseDate(sortedReports[0]?.report_date))
-                  ? format(
-                      parseDate(sortedReports[0].report_date),
-                      "MMM d, yyyy"
-                    )
-                  : "Unknown date"}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg p-2 shadow-sm">
-              <div className="text-xs text-gray-500">First Report</div>
-              <div className="text-sm font-medium text-gray-800">
-                {isValidDate(
-                  parseDate(
-                    sortedReports[sortedReports.length - 1]?.report_date
-                  )
-                )
-                  ? format(
-                      parseDate(
-                        sortedReports[sortedReports.length - 1].report_date
-                      ),
-                      "MMM d, yyyy"
-                    )
-                  : "Unknown date"}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -613,17 +448,6 @@ const PrescriptionsList = ({ prescriptions }) => {
   if (prescriptions.length === 0) {
     return <EmptyState type="prescription" />;
   }
-
-  // Find most recent prescription date
-  const mostRecent = prescriptions.reduce((latest, current) => {
-    const currentDate = parseDate(current.prescription_date);
-    const latestDate = parseDate(latest);
-
-    if (!isValidDate(currentDate)) return latest;
-    if (!isValidDate(latestDate)) return current.prescription_date;
-
-    return currentDate > latestDate ? current.prescription_date : latest;
-  }, null);
 
   return (
     <div>
