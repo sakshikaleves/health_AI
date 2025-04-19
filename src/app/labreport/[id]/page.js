@@ -5,6 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
   Loader2,
   ArrowLeft,
   FileText,
@@ -16,11 +25,10 @@ import {
   RefreshCw,
   Heart,
   Activity,
-  Pill,
   Info,
+  AlertCircle,
   X,
 } from "lucide-react";
-import { format } from "date-fns";
 import { toast } from "sonner";
 
 const LabReportDetail = () => {
@@ -29,54 +37,18 @@ const LabReportDetail = () => {
   const [report, setReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [expandedCategory, setExpandedCategory] = useState(0); // First category expanded by default
+  const [expandedCategory, setExpandedCategory] = useState(0);
   const [flippedCategories, setFlippedCategories] = useState({});
   const [flippedTests, setFlippedTests] = useState({});
-
-  // Add styles for card flipping to the document
-  useEffect(() => {
-    const styleEl = document.createElement("style");
-    styleEl.innerHTML = `
-      .card-container {
-        perspective: 1000px;
-      }
-      .card-inner {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        transition: transform 0.6s;
-        transform-style: preserve-3d;
-      }
-      .card-front, .card-back {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-      }
-      .card-back {
-        transform: rotateY(180deg);
-      }
-      .flipped {
-        transform: rotateY(180deg);
-      }
-    `;
-    document.head.appendChild(styleEl);
-
-    return () => {
-      document.head.removeChild(styleEl);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchLabReport = async () => {
       setIsLoading(true);
       try {
-        // Use the direct endpoint with byTestGroup parameter
         console.log(`Fetching lab report for ID: ${id}`);
         const apiUrl = `/api/proxy/labreport/${id}?byTestGroup=True`;
         console.log(`Using API URL: ${apiUrl}`);
-
+        
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
@@ -89,21 +61,12 @@ const LabReportDetail = () => {
 
         const data = await response.json();
         console.log("Lab report data received:", data);
-
-        // Log the structure of TestResultsByHealthGroup
-        if (data.TestResultsByHealthGroup) {
-          console.log(
-            "Number of health groups:",
-            data.TestResultsByHealthGroup.length
-          );
-          console.log(
-            "First health group structure:",
-            JSON.stringify(data.TestResultsByHealthGroup[0], null, 2)
-          );
-        } else {
-          console.error("TestResultsByHealthGroup is missing or null");
+        
+        if (!data || !data.TestResultsByHealthGroup) {
+          console.error("Invalid data format:", data);
+          throw new Error("Received invalid data format from API");
         }
-
+        
         setReport(data);
       } catch (err) {
         console.error("Error fetching lab report:", err);
@@ -119,61 +82,25 @@ const LabReportDetail = () => {
     }
   }, [id]);
 
-  // Toggle category expansion
-  const toggleCategory = (index) => {
+  const toggleExpandCategory = (index) => {
     setExpandedCategory(expandedCategory === index ? -1 : index);
   };
 
-  // Toggle category card flip
   const toggleCategoryFlip = (index, e) => {
-    e.stopPropagation(); // Prevent expanding/collapsing when flipping
-    setFlippedCategories((prev) => ({
+    e?.stopPropagation();
+    setFlippedCategories(prev => ({
       ...prev,
-      [index]: !prev[index],
+      [index]: !prev[index]
     }));
   };
 
-  // Toggle test card flip
-  const toggleTestFlip = (testId, e) => {
-    e.stopPropagation(); // Prevent event bubbling
-    setFlippedTests((prev) => ({
+  const toggleTestFlip = (categoryIndex, testIndex, e) => {
+    e?.stopPropagation();
+    const key = `${categoryIndex}-${testIndex}`;
+    setFlippedTests(prev => ({
       ...prev,
-      [testId]: !prev[testId],
+      [key]: !prev[key]
     }));
-  };
-
-  // Get color based on health score
-  const getHealthScoreColor = (score) => {
-    if (score >= 8) return "from-green-500 to-green-600";
-    if (score >= 6) return "from-yellow-500 to-yellow-600";
-    if (score >= 4) return "from-orange-500 to-orange-600";
-    return "from-red-500 to-red-600";
-  };
-
-  // Get color based on test result status
-  const getResultStatusColor = (value, refRanges) => {
-    if (!refRanges || refRanges.length === 0) return "text-gray-700";
-
-    const numValue = parseFloat(value);
-    const low = parseFloat(refRanges[0].low);
-    const high = parseFloat(refRanges[0].high);
-
-    if (isNaN(numValue) || isNaN(low) || isNaN(high)) return "text-gray-700";
-
-    if (numValue < low) return "text-blue-600";
-    if (numValue > high) return "text-red-600";
-    return "text-green-600";
-  };
-
-  // Get icon for health category
-  const getCategoryIcon = (categoryName) => {
-    const name = categoryName.toLowerCase();
-    if (name.includes("heart") || name.includes("cardio"))
-      return <Heart className="h-5 w-5" />;
-    if (name.includes("kidney")) return <Activity className="h-5 w-5" />;
-    if (name.includes("liver")) return <Activity className="h-5 w-5" />;
-    if (name.includes("blood")) return <Activity className="h-5 w-5" />;
-    return <Activity className="h-5 w-5" />;
   };
 
   if (isLoading) {
@@ -181,12 +108,8 @@ const LabReportDetail = () => {
       <div className="max-w-md mx-auto p-4 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-10 w-10 mx-auto text-blue-600 animate-spin" />
-          <p className="mt-4 text-gray-600 font-medium">
-            Loading lab report...
-          </p>
-          <p className="mt-2 text-sm text-gray-500">
-            Please wait while we fetch your health data
-          </p>
+          <p className="mt-4 text-gray-600 font-medium">Loading lab report...</p>
+          <p className="mt-2 text-sm text-gray-500">Please wait while we fetch your health data</p>
         </div>
       </div>
     );
@@ -196,53 +119,63 @@ const LabReportDetail = () => {
     return (
       <div className="max-w-md mx-auto p-4 min-h-screen">
         <BackButton onClick={() => router.back()} />
-        <Card className="border border-red-100 shadow-sm overflow-hidden">
-          <div className="bg-red-50 p-4 border-b border-red-100">
-            <div className="mx-auto w-12 h-12 rounded-full bg-white flex items-center justify-center">
-              <FileText className="h-6 w-6 text-red-500" />
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error Loading Report</AlertTitle>
+          <AlertDescription>
+            {error}
+            <div className="mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                Try Again
+              </Button>
             </div>
-          </div>
-          <CardContent className="pt-6 text-center">
-            <h3 className="text-lg font-medium text-red-700 mb-2">
-              Error Loading Report
-            </h3>
-            <p className="text-gray-600">{error}</p>
-            <Button
-              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => router.push("/records")}
-            >
-              Return to Records
-            </Button>
-          </CardContent>
-        </Card>
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
-  console.log(report.TestResultsByHealthGroup);
-  const TestResult = report.TestResultsByHealthGroup;
+
+  if (!report || !report.TestResultsByHealthGroup) {
+    return (
+      <div className="max-w-md mx-auto p-4 min-h-screen">
+        <BackButton onClick={() => router.back()} />
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>No Report Data</AlertTitle>
+          <AlertDescription>
+            No health report data was found. This could be due to a missing or invalid
+            report ID.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto p-4 pb-16 pt-20 bg-slate-50 min-h-screen">
       <BackButton onClick={() => router.push("/records")} />
 
-      {report && (
-        <>
-          {/* Lab Report Header Card */}
-          <Card className="mb-5 overflow-hidden border border-gray-200 shadow-md">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-white text-lg font-bold">
-                    Health Report
-                  </h2>
-                  <p className="text-blue-100 text-sm mt-1">
-                    {report.Lab?.name || "Medical Laboratory"}
-                  </p>
-                </div>
-              </div>
+      {/* Lab Report Header Card */}
+      <Card className="mb-5 overflow-hidden border border-gray-200 shadow-md">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-white text-lg font-bold">Health Report</h2>
+              <p className="text-blue-100 text-sm mt-1">
+                {report.Lab?.name || "Medical Laboratory"}
+              </p>
             </div>
+          </div>
+        </div>
 
-            {/* Add report date */}
-            <div className="p-4 border-b border-gray-100 bg-white">
+        <CardContent className="p-0">
+          {/* Patient Info */}
+          <div className="p-4 border-b border-gray-100 bg-white">
+            <div className="flex justify-between">
               <div className="flex items-center">
                 <div className="bg-blue-50 p-1.5 rounded-md">
                   <Calendar className="h-4 w-4 text-blue-600" />
@@ -251,541 +184,456 @@ const LabReportDetail = () => {
                   <p className="text-xs text-gray-500">Report Date</p>
                   <p className="text-sm font-medium text-gray-800">
                     {report.report_date
-                      ? new Date(report.report_date).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )
+                      ? new Date(report.report_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
                       : "Not available"}
                   </p>
                 </div>
               </div>
+              <div>
+                <p className="text-xs text-gray-500 text-right">Ref Number</p>
+                <p className="text-sm font-medium text-gray-800">{report.reference_number || "N/A"}</p>
+              </div>
             </div>
+          </div>
 
-            {/* Lab Information */}
-            {report.Lab && (
-              <div className="p-4 bg-white">
-                <div className="flex items-start">
-                  <div className="bg-blue-50 p-2 rounded-full mt-0.5">
-                    <Building className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-800">
-                      {report.Lab.name}
-                    </p>
-
-                    {report.Lab.Address && (
-                      <div className="mt-1 text-xs text-gray-600">
-                        <div className="flex items-start">
-                          <MapPin className="h-3 w-3 text-gray-400 mt-0.5 flex-shrink-0" />
-                          <div className="ml-1.5 leading-relaxed">
-                            {report.Lab.Address.street},{" "}
-                            {report.Lab.Address.city}{" "}
-                            {report.Lab.Address.zip_code}
-                          </div>
+          {/* Lab Information */}
+          {report.Lab && (
+            <div className="p-4 bg-white">
+              <div className="flex items-start">
+                <div className="bg-blue-50 p-2 rounded-full mt-0.5">
+                  <Building className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-gray-800">{report.Lab.name}</p>
+                  {report.Lab.Address && (
+                    <div className="mt-1 text-xs text-gray-600">
+                      <div className="flex items-start">
+                        <MapPin className="h-3 w-3 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div className="ml-1.5 leading-relaxed">
+                          {report.Lab.Address.street}, {report.Lab.Address.city} {report.Lab.Address.zip_code}
                         </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Health Categories */}
+      <div className="space-y-4 mb-8">
+        <h3 className="font-bold text-gray-800 ml-1">
+          Health Categories ({report.TestResultsByHealthGroup.length})
+        </h3>
+
+        {report.TestResultsByHealthGroup.map((group, index) => (
+          <div key={index} className="transition-all duration-300">
+            <CategoryCard
+              healthGroup={group}
+              index={index}
+              isExpanded={expandedCategory === index}
+              isFlipped={flippedCategories[index]}
+              toggleExpand={() => toggleExpandCategory(index)}
+              toggleFlip={(e) => toggleCategoryFlip(index, e)}
+              toggleTestFlip={toggleTestFlip}
+              flippedTests={flippedTests}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Actions Card */}
+      <div className="flex flex-col mt-8 space-y-3">
+        <Button
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-xl shadow-md"
+          onClick={() => window.print()}
+        >
+          <div className="flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="font-semibold">Print Health Report</span>
+          </div>
+        </Button>
+
+        <Button
+          variant="outline"
+          className="w-full border-gray-300 py-5 rounded-xl"
+          onClick={() => router.push(`/shared/labreport/${report.id}`)}
+        >
+          <div className="flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 mr-2 text-gray-600"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+            </svg>
+            <span className="font-semibold text-gray-700">Share Report</span>
+          </div>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Category Card Component
+const CategoryCard = ({
+  healthGroup,
+  index,
+  isExpanded,
+  isFlipped,
+  toggleExpand,
+  toggleFlip,
+  toggleTestFlip,
+  flippedTests
+}) => {
+  const { HealthCategory, Analysis, TestResults } = healthGroup;
+
+  // Get badge variant based on health score
+  const getScoreBadgeVariant = (score) => {
+    if (score >= 8) return "bg-green-100 text-green-700";
+    if (score >= 6) return "bg-blue-100 text-blue-700";
+    if (score >= 4) return "bg-yellow-100 text-yellow-700";
+    return "bg-red-100 text-red-700";
+  };
+
+  // Check if we have all needed data
+  if (!HealthCategory || !HealthCategory.name) {
+    return null;
+  }
+
+  return (
+    <Card className={`overflow-hidden shadow-md border ${isExpanded ? "ring-2 ring-blue-300" : "border-gray-200"}`}>
+      <div className="relative">
+        {/* Front side of Category Card */}
+        <div className={`transition-all duration-500 ${isFlipped ? "hidden" : "block"}`}></div>
+          <CardHeader className="p-4 cursor-pointer bg-white" onClick={toggleExpand}>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="text-gray-800 font-medium text-base">
+                  {HealthCategory.name}
+                </CardTitle>
+                <CardDescription className="text-xs text-gray-500 mt-0.5">
+                  {HealthCategory.description || "Health category"}
+                </CardDescription>
+              </div>
+              <div className="flex flex-col items-end space-y-2">
+                {Analysis && Analysis["Health Score"] && (
+                  <Badge className={getScoreBadgeVariant(Analysis["Health Score"])}>
+                    Score: {Analysis["Health Score"]}/10
+                  </Badge>
+                )}
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 h-7 w-7 text-gray-400 hover:text-blue-500"
+                    onClick={(e) => toggleFlip(e)}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                  {isExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+
+          {isExpanded && TestResults && (
+            <CardContent className="p-4 space-y-3 bg-gray-50 border-t border-gray-100">
+              {TestResults.length > 0 ? (
+                TestResults.map((test, testIndex) => (
+                  <TestCard
+                    key={testIndex}
+                    test={test}
+                    categoryIndex={index}
+                    testIndex={testIndex}
+                    isFlipped={flippedTests[`${index}-${testIndex}`]}
+                    toggleFlip={(e) => toggleTestFlip(index, testIndex, e)}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-gray-500 p-2">No test results available for this category</p>
+              )}
+            </CardContent>
+          )}
+        </div>
+
+        {/* Back side of Category Card - Analysis & Recommendations */}
+        <div className={`transition-all duration-500 ${isFlipped ? "block" : "hidden"}`}>
+          <CardHeader className="p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white flex justify-between items-center">
+            <div>
+              <CardTitle className="text-white font-medium">
+                {HealthCategory.name} Analysis
+              </CardTitle>
+              <CardDescription className="text-white/80 text-sm">
+                Detailed health information
+              </CardDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-white hover:bg-white/20"
+              onClick={(e) => toggleFlip(e)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+
+          <CardContent className="p-4">
+            <Tabs defaultValue="summary" className="w-full">
+              <TabsList className="grid grid-cols-4 mb-4">
+                <TabsTrigger value="summary">Summary</TabsTrigger>
+                <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="summary" className="space-y-4">
+                {Analysis?.Summary && (
+                  <div className="space-y-2">
+                    <h3 className="font-medium">Overall {HealthCategory.name}</h3>
+                    <p className="text-sm">
+                      {Analysis.Summary["Overall Kidney Health"] || "Not available"}
+                    </p>
+                 
+                    {Analysis.Summary["Key Observations"]?.length > 0 && (
+                      <>
+                        <h4 className="font-medium text-sm mt-4">Key Observations</h4>
+                        <ul className="list-disc pl-5 text-sm space-y-1">
+                          {Analysis.Summary["Key Observations"].map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="analysis" className="space-y-4">
+                {Analysis?.["Detailed Analysis"] && 
+                  Object.entries(Analysis["Detailed Analysis"]).map(([key, data], i) => (
+                    <div key={i} className="border rounded-lg p-3">
+                      <h3 className="font-medium">{key}</h3>
+                      <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                        <div>
+                          <span className="font-medium">Value:</span> {data.Value}
+                        </div>
+                        <div>
+                          <span className="font-medium">Interpretation:</span> {data.Interpretation}
+                        </div>
+                      </div>
+                      {/* {data.Details?.length > 0 && (
+                        <div className="mt-2 text-sm">
+                          <h4 className="font-medium">Details:</h4>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {data.Details.map((detail, i) => (
+                              <li key={i}>{detail}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )} */}
+                    </div>
+                  ))
+                }
+              </TabsContent>
+
+              <TabsContent value="recommendations" className="space-y-4">
+                {Analysis?.Recommendations && (
+                  <div className="space-y-4">
+                    {Analysis.Recommendations.Lifestyle?.length > 0 && (
+                      <div>
+                        <h3 className="font-medium">Lifestyle Recommendations</h3>
+                        <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
+                          {Analysis.Recommendations.Lifestyle.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {Analysis.Recommendations["Potential Improvements"]?.length > 0 && (
+                      <div>
+                        <h3 className="font-medium">Potential Improvements</h3>
+                        <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
+                          {Analysis.Recommendations["Potential Improvements"].map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {Analysis.Recommendations["Preventive Measures"]?.length > 0 && (
+                      <div>
+                        <h3 className="font-medium">Preventive Measures</h3>
+                        <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
+                          {Analysis.Recommendations["Preventive Measures"].map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
-            )}
-          </Card>
+                )}
+              </TabsContent>
 
-          {/* Debug Card - Display the actual data */}
-          <Card className="mb-5 p-4 border border-orange-200 bg-orange-50">
-            <h3 className="text-orange-800 font-medium mb-2">
-              Debug Information
-            </h3>
-            <div className="text-xs text-orange-700 font-mono overflow-x-auto">
-              <p>Report ID: {report.id}</p>
-              <p>Reference: {report.reference_number || "None"}</p>
-              <p>
-                Health Groups: {report.TestResultsByHealthGroup?.length || 0}
-              </p>
-              {report.TestResultsByHealthGroup?.length > 0 && (
-                <>
-                  <p className="mt-2 font-semibold">First Group:</p>
-                  <p>
-                    Category:{" "}
-                    {report.TestResultsByHealthGroup[0]?.HealthCategory?.name ||
-                      "Unknown"}
-                  </p>
-                  <p>
-                    Tests:{" "}
-                    {report.TestResultsByHealthGroup[0]?.TestResults?.length ||
-                      0}
-                  </p>
-                </>
-              )}
-            </div>
-          </Card>
-
-          {/* Health Categories */}
-          {Array.isArray(TestResult) &&
-          report.TestResultsByHealthGroup.length > 0 ? (
-            <div className="space-y-4 mb-8">
-              <h3 className="font-bold text-gray-800 ml-1">
-                Health Categories ({report.TestResultsByHealthGroup.length})
-              </h3>
-
-              {TestResult.map((group, index) => {
-                // Check if this group has all the necessary data
-                const hasValidData =
-                  group &&
-                  group.HealthCategory &&
-                  group.HealthCategory.name &&
-                  Array.isArray(group.TestResults);
-
-                if (!hasValidData) {
-                  console.error("Invalid group structure:", group);
-                  return null;
-                }
-                
-                return (
-                  <div key={index} className="card-container">
-                    <div
-                      className={`card-inner ${
-                        flippedCategories[index] ? "flipped" : ""
-                      }`}
-                      style={{
-                        minHeight: flippedCategories[index] ? "400px" : "auto",
-                      }}
-                    >
-                      {/* Category Front */}
-                      <Card
-                        className={`card-front shadow-md border border-gray-200 overflow-hidden ${
-                          expandedCategory === index
-                            ? "ring-2 ring-blue-300"
-                            : ""
-                        }`}
-                      >
-                        <div
-                          className="p-4 flex justify-between items-center bg-white cursor-pointer"
-                          onClick={() => toggleCategory(index)}
-                        >
-                          <div className="flex items-center">
-                            <div className="bg-blue-50 p-2 rounded-full">
-                              {getCategoryIcon(group.HealthCategory.name)}
-                            </div>
-                            <div className="ml-3">
-                              <h3 className="font-medium text-gray-800">
-                                {group.HealthCategory.name}
-                              </h3>
-                              <p className="text-xs text-gray-500">
-                                {group.HealthCategory.description ||
-                                  "Health category"}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center space-x-2">
-                            {group.Analysis &&
-                              group.Analysis["Health Score"] && (
-                                <div className="bg-gray-100 rounded-full px-3 py-1 flex items-center">
-                                  <div
-                                    className={`h-4 w-4 rounded-full bg-gradient-to-r ${getHealthScoreColor(
-                                      group.Analysis["Health Score"]
-                                    )}`}
-                                  ></div>
-                                  <span className="ml-1.5 text-xs font-medium text-gray-700">
-                                    {group.Analysis["Health Score"]}/10
-                                  </span>
-                                </div>
-                              )}
-
-                            <button
-                              className="p-1 text-gray-400 hover:text-blue-500"
-                              onClick={(e) => toggleCategoryFlip(index, e)}
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                            </button>
-
-                            {expandedCategory === index ? (
-                              <ChevronUp className="h-5 w-5 text-gray-500" />
-                            ) : (
-                              <ChevronDown className="h-5 w-5 text-gray-500" />
-                            )}
-                          </div>
+              <TabsContent value="details">
+                <div className="prose prose-sm max-w-none">
+                  <p>{HealthCategory.description || "No description available"}</p>
+                  <div className="mt-4">
+                    <h3 className="font-medium">Test Summary</h3>
+                    <div className="mt-2 space-y-2">
+                      {TestResults?.map((test, i) => (
+                        <div key={i} className="text-sm">
+                          <span className="font-medium">{test.LabTest?.name || "Test"}:</span>{" "}
+                          {test.result_value} {test.units}
                         </div>
-
-                        {/* Expanded Test Results */}
-                        {expandedCategory === index && group.TestResults && (
-                          <div className="p-4 space-y-3 bg-gray-50 border-t border-gray-100">
-                            {group.TestResults.length > 0 ? (
-                              group.TestResults.map((test) => (
-                                <div key={test.id} className="card-container">
-                                  <div
-                                    className={`card-inner ${
-                                      flippedTests[test.id] ? "flipped" : ""
-                                    }`}
-                                    style={{ minHeight: "120px" }}
-                                  >
-                                    {/* Test Card Front */}
-                                    <Card className="card-front shadow-sm border border-gray-200">
-                                      <div className="p-3">
-                                        <div className="flex justify-between">
-                                          <div>
-                                            <h4 className="font-medium text-gray-800 text-sm">
-                                              {test.LabTest?.name || "Test"}
-                                            </h4>
-                                            <p className="text-xs text-gray-500">
-                                              {test.LabTest
-                                                ?.short_description ||
-                                                "Test details"}
-                                            </p>
-                                          </div>
-                                          <button
-                                            className="p-1 text-gray-400 hover:text-blue-500"
-                                            onClick={(e) =>
-                                              toggleTestFlip(test.id, e)
-                                            }
-                                          >
-                                            <RefreshCw className="h-3.5 w-3.5" />
-                                          </button>
-                                        </div>
-                                        <div className="mt-2 flex justify-between items-end">
-                                          <div
-                                            className={`font-bold text-lg ${getResultStatusColor(
-                                              test.result_value,
-                                              test.RefRanges
-                                            )}`}
-                                          >
-                                            {test.result_value}
-                                          </div>
-                                          <div className="text-xs text-gray-500">
-                                            {test.units || ""}
-                                          </div>
-                                        </div>
-                                        {test.RefRanges &&
-                                          test.RefRanges.length > 0 && (
-                                            <div className="mt-1 text-xs text-gray-500">
-                                              Normal range:{" "}
-                                              {test.RefRanges[0].low} -{" "}
-                                              {test.RefRanges[0].high}{" "}
-                                              {test.units}
-                                            </div>
-                                          )}
-                                      </div>
-                                    </Card>
-
-                                    {/* Test Card Back */}
-                                    <Card className="card-back shadow-sm border border-gray-200">
-                                      <div className="p-3">
-                                        <div className="flex justify-between items-start">
-                                          <h4 className="font-medium text-gray-800 text-sm">
-                                            {test.LabTest.name}
-                                          </h4>
-                                          <button
-                                            className="p-1 text-gray-400 hover:text-blue-500"
-                                            onClick={(e) =>
-                                              toggleTestFlip(test.id, e)
-                                            }
-                                          >
-                                            <X className="h-3.5 w-3.5" />
-                                          </button>
-                                        </div>
-                                        <div className="mt-2 space-y-2">
-                                          <div>
-                                            <p className="text-xs font-medium text-gray-500">
-                                              DESCRIPTION
-                                            </p>
-                                            <p className="text-sm text-gray-700">
-                                              {test.LabTest.long_description ||
-                                                test.LabTest.short_description}
-                                            </p>
-                                          </div>
-
-                                          {test.RefRanges &&
-                                            test.RefRanges.length > 0 && (
-                                              <div>
-                                                <p className="text-xs font-medium text-gray-500">
-                                                  REFERENCE RANGES
-                                                </p>
-                                                {test.RefRanges.map(
-                                                  (range, idx) => (
-                                                    <div
-                                                      key={idx}
-                                                      className="text-sm text-gray-700"
-                                                    >
-                                                      <span>
-                                                        {range.low} -{" "}
-                                                        {range.high}{" "}
-                                                        {test.units}
-                                                      </span>
-                                                      {range.interpretation &&
-                                                        range.interpretation !==
-                                                          "-" && (
-                                                          <span className="text-xs text-gray-500 block mt-0.5">
-                                                            {
-                                                              range.interpretation
-                                                            }
-                                                          </span>
-                                                        )}
-                                                    </div>
-                                                  )
-                                                )}
-                                              </div>
-                                            )}
-
-                                          <div className="pt-1">
-                                            <p className="text-xs font-medium text-gray-500">
-                                              YOUR RESULT
-                                            </p>
-                                            <p
-                                              className={`text-sm font-bold ${getResultStatusColor(
-                                                test.result_value,
-                                                test.RefRanges
-                                              )}`}
-                                            >
-                                              {test.result_value} {test.units}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </Card>
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <p className="text-center text-gray-500 p-4">
-                                No test results available for this category
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </Card>
-
-                      {/* Category Back - Analysis & Recommendations */}
-                      <Card className="card-back shadow-md border border-gray-200 overflow-hidden">
-                        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-4 flex justify-between items-center">
-                          <h3 className="font-medium text-white">
-                            {group.HealthCategory.name} Analysis
-                          </h3>
-                          <button
-                            className="text-white hover:bg-white/20 p-1 rounded"
-                            onClick={(e) => toggleCategoryFlip(index, e)}
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        <div className="p-4 max-h-[400px] overflow-y-auto">
-                          {group.Analysis && (
-                            <div className="space-y-4">
-                              {/* Health Score */}
-                              <div className="bg-indigo-50 p-3 rounded-lg">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-medium text-indigo-800">
-                                    Health Score
-                                  </span>
-                                  <div className="flex items-center">
-                                    <div
-                                      className={`h-4 w-4 rounded-full bg-gradient-to-r ${getHealthScoreColor(
-                                        group.Analysis["Health Score"]
-                                      )}`}
-                                    ></div>
-                                    <span className="ml-1.5 font-bold text-indigo-700">
-                                      {group.Analysis["Health Score"]}/10
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Detailed Analysis */}
-                              {group.Analysis["Detailed Analysis"] && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                    Detailed Analysis
-                                  </h4>
-                                  <div className="space-y-2">
-                                    {Object.entries(
-                                      group.Analysis["Detailed Analysis"]
-                                    ).map(([key, analysis], idx) => (
-                                      <div
-                                        key={idx}
-                                        className="bg-white p-3 rounded-lg border border-gray-200"
-                                      >
-                                        <div className="flex justify-between">
-                                          <span className="text-sm font-medium text-gray-800">
-                                            {key}
-                                          </span>
-                                          <span
-                                            className={`text-xs px-2 py-0.5 rounded ${
-                                              analysis.Interpretation ===
-                                              "Normal"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-amber-100 text-amber-700"
-                                            }`}
-                                          >
-                                            {analysis.Interpretation}
-                                          </span>
-                                        </div>
-                                        <div className="mt-1 text-sm text-gray-700">
-                                          {analysis.Value}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Summary */}
-                              {group.Analysis.Summary && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                    Summary
-                                  </h4>
-                                  <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                    {group.Analysis.Summary[
-                                      "Key Observations"
-                                    ] && (
-                                      <div>
-                                        <p className="text-xs font-medium text-gray-500">
-                                          KEY OBSERVATIONS
-                                        </p>
-                                        <ul className="mt-1 text-sm text-gray-700">
-                                          {group.Analysis.Summary[
-                                            "Key Observations"
-                                          ].map((obs, i) => (
-                                            <li
-                                              key={i}
-                                              className="flex items-start mt-1"
-                                            >
-                                              <span className="mr-1.5 text-indigo-500">
-                                                •
-                                              </span>
-                                              {obs}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    )}
-
-                                    {group.Analysis.Summary[
-                                      "Overall Kidney Health"
-                                    ] && (
-                                      <div className="mt-3">
-                                        <p className="text-xs font-medium text-gray-500">
-                                          OVERALL HEALTH
-                                        </p>
-                                        <p className="text-sm font-medium text-indigo-700 mt-1">
-                                          {
-                                            group.Analysis.Summary[
-                                              "Overall Kidney Health"
-                                            ]
-                                          }
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Recommendations */}
-                              {group.Analysis.Recommendations && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                    Recommendations
-                                  </h4>
-                                  <div className="space-y-2">
-                                    {Object.entries(
-                                      group.Analysis.Recommendations
-                                    ).map(([key, recs], idx) => (
-                                      <div
-                                        key={idx}
-                                        className="bg-white p-3 rounded-lg border border-gray-200"
-                                      >
-                                        <p className="text-xs font-medium text-gray-500">
-                                          {key}
-                                        </p>
-                                        <ul className="mt-1">
-                                          {recs.map((rec, i) => (
-                                            <li
-                                              key={i}
-                                              className="text-sm text-gray-700 flex items-start mt-1"
-                                            >
-                                              <span className="mr-1.5 text-green-500">
-                                                •
-                                              </span>
-                                              {rec}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </Card>
+                      ))}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </div>
+    </Card>
+  );
+};
+
+// Test Card Component
+const TestCard = ({ test, categoryIndex, testIndex, isFlipped, toggleFlip }) => {
+  if (!test || !test.LabTest) {
+    return null;
+  }
+
+  const { LabTest, result_value, units, RefRanges } = test;
+
+  // Determine if value is within reference range
+  const isNormal = () => {
+    if (!RefRanges || RefRanges.length === 0) return true;
+    const range = RefRanges[0];
+    const low = parseFloat(range.low);
+    const high = parseFloat(range.high);
+    const value = parseFloat(result_value);
+
+    if (isNaN(value) || isNaN(low) || isNaN(high)) return true;
+    return value >= low && value <= high;
+  };
+  
+  const getStatusVariant = () => {
+    if (isNormal()) return "bg-green-100 text-green-700";
+    return "bg-red-100 text-red-700";
+  };
+
+  return (
+    <Card className="overflow-hidden shadow-sm border border-gray-200">
+      <div className="relative">
+        {/* Front of Test Card */}
+        <div className={`transition-all duration-300 ${isFlipped ? "hidden" : "block"}`}>
+          <CardHeader className="py-3 px-4 flex justify-between items-center">
+            <CardTitle className="text-base font-medium">{LabTest.name}</CardTitle>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0"
+              onClick={toggleFlip}
+            >
+              <Info className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+
+          <CardContent className="py-2 px-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold">{result_value}</span>
+                <span className="text-sm text-gray-500">{units}</span>
+              </div>
+              
+              <Badge className={getStatusVariant()}>
+                {isNormal() ? "Normal" : "Abnormal"}
+              </Badge>
             </div>
-          ) : (
-            <Card className="mb-5 p-4 text-center">
-              <p className="text-gray-600">
-                No health category data available for this report.
+            
+            {RefRanges && RefRanges.length > 0 && (
+              <p className="text-xs text-gray-500 mt-2">
+                Reference range: {RefRanges[0].low} - {RefRanges[0].high} {units}
               </p>
-              <p className="text-sm text-gray-500 mt-2">
-                Raw data: {JSON.stringify(report.TestResultsByHealthGroup)}
-              </p>
-            </Card>
-          )}
+            )}
+          </CardContent>
+        </div>
 
-          {/* Actions Card */}
-          <div className="flex flex-col mt-8 space-y-3">
-            <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-xl shadow-md"
-              onClick={() => window.print()}
+        {/* Back of Test Card */}
+        <div className={`transition-all duration-300 ${isFlipped ? "block" : "hidden"}`}>
+          <CardHeader className="py-3 px-4 flex justify-between items-center">
+            <div>
+              <CardTitle className="text-base font-medium">{LabTest.name}</CardTitle>
+              <CardDescription>{LabTest.test_group || ""}</CardDescription>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0"
+              onClick={toggleFlip}
             >
-              <div className="flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="font-semibold">Print Health Report</span>
-              </div>
+              <X className="h-4 w-4" />
             </Button>
+          </CardHeader>
 
-            <Button
-              variant="outline"
-              className="w-full border-gray-300 py-5 rounded-xl"
-              onClick={() => router.push(`/shared/labreport/${report.id}`)}
-            >
-              <div className="flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2 text-gray-600"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                </svg>
-                <span className="font-semibold text-gray-700">
-                  Share Report
-                </span>
+          <CardContent className="py-2 px-4 space-y-3">
+            <div>
+              <h4 className="text-sm font-medium">Description</h4>
+              <p className="text-sm">{LabTest.short_description || LabTest.long_description || "No description available"}</p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium">Reference Range</h4>
+              {RefRanges && RefRanges.length > 0 ? (
+                <div className="text-sm">
+                  <p>{RefRanges[0].low} - {RefRanges[0].high} {units}</p>
+                  {RefRanges[0].interpretation && (
+                    <p className="text-xs text-gray-500 mt-1">{RefRanges[0].interpretation}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm">No reference range data available</p>
+              )}
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium">Your Result</h4>
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-bold">{result_value}</span>
+                <span className="text-sm text-gray-500">{units}</span>
+                <Badge className={`ml-2 ${getStatusVariant()}`}>
+                  {isNormal() ? "Normal" : "Abnormal"}
+                </Badge>
               </div>
-            </Button>
-          </div>
-        </>
-      )}
-    </div>
+            </div>
+          </CardContent>
+        </div>
+      </div>
+    </Card>
   );
 };
 
@@ -797,7 +645,7 @@ const BackButton = ({ onClick }) => (
     onClick={onClick}
   >
     <ArrowLeft className="mr-2 h-4 w-4 text-blue-500 group-hover:-translate-x-1 transition-transform" />
-    <span className="font-medium text-gray-700">Back to Reports</span>
+    <span className="font-medium text-gray-700">Back to Records</span>
   </Button>
 );
 
