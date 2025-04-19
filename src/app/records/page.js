@@ -37,94 +37,7 @@ const isValidDate = (date) => {
   );
 };
 
-const extractMedicationDetails = (notes) => {
-  if (!notes || notes === "-") return [];
-
-  const lines = notes.split("\n").filter((line) => line.trim());
-  return lines.map((line) => {
-    // Try to identify medication types based on common prefixes
-    const type = line.toLowerCase().includes("tab")
-      ? "tablet"
-      : line.toLowerCase().includes("inj")
-      ? "injection"
-      : line.toLowerCase().includes("syp")
-      ? "syrup"
-      : line.toLowerCase().includes("adv")
-      ? "advice"
-      : "medication";
-
-    return {
-      type,
-      text: line.trim(),
-    };
-  });
-};
-
-const getMedicationEmoji = (type) => {
-  switch (type) {
-    case "tablet":
-      return "💊";
-    case "injection":
-      return "💉";
-    case "syrup":
-      return "🧪";
-    case "advice":
-      return "ℹ️";
-    default:
-      return "💊";
-  }
-};
-
 // ============== UI Components ==============
-
-// User Profile Component with enhanced details
-const UserProfile = ({ userData }) => {
-  if (!userData) return null;
-
-  return (
-    <Card className="mb-5 overflow-hidden">
-      <CardContent className="p-0">
-        <div className="bg-gradient-to-r from-teal-500 to-teal-600 p-4">
-          <div className="flex items-center">
-            <div className="bg-white p-3 rounded-full shadow-md">
-              <User className="h-6 w-6 text-teal-600" />
-            </div>
-            <div className="ml-3 text-white">
-              <h3 className="font-semibold text-lg">
-                {userData.firstName} {userData.lastName}
-              </h3>
-              <div className="flex items-center text-teal-100 text-sm">
-                <Phone className="h-3 w-3 mr-1" />
-                {userData.phone || "No phone number"}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="px-4 py-3 bg-white flex items-center justify-between">
-          <div className="flex items-center text-sm text-gray-600">
-            <div className="mr-4">
-              <span className="text-gray-500">Patient ID:</span>{" "}
-              {userData.id || "N/A"}
-            </div>
-            {userData.gender && userData.gender !== "-" && (
-              <div>
-                <span className="text-gray-500">Gender:</span> {userData.gender}
-              </div>
-            )}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs text-teal-700"
-            onClick={() => (window.location.href = "/profile")}
-          >
-            View Profile
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
 
 // Enhanced Tab Navigation Component
 const RecordsTabs = ({
@@ -264,7 +177,7 @@ const EmptyState = ({ type }) => (
       view them here
     </p>
     <Button
-      onClick={() => (window.location.href = "/upload")}
+      onClick={() => (window.location.href = "/scanner")}
       className="bg-teal-600 hover:bg-teal-700 text-white"
     >
       Upload {type === "prescription" ? "Prescription" : "Lab Report"}
@@ -284,7 +197,7 @@ const PrescriptionCard = ({ prescription }) => {
 
   return (
     <Card
-      className="mb-4 overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-teal-200"
+      className="mb-4 overflow-hidden shadow-xl border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer hover:border-teal-200"
       onClick={handleCardClick}
     >
       <CardContent className="p-0">
@@ -339,7 +252,7 @@ const LabReportCard = ({ report }) => {
 
   return (
     <Card
-      className="mb-4 shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-blue-200"
+      className="mb-4 shadow-xl border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-blue-200"
       onClick={handleCardClick}
     >
       <CardContent className="p-0">
@@ -399,7 +312,7 @@ const LabReportsList = ({ labReports }) => {
   return (
     <div>
       {/* Sorting controls */}
-      <div className="flex items-center justify-between mb-4 bg-white p-2 rounded-lg shadow-sm">
+      {/* <div className="flex items-center justify-between mb-4 bg-white p-2 rounded-lg shadow-sm">
         <div className="text-sm text-gray-700 font-medium">
           {labReports.length} Reports
         </div>
@@ -425,7 +338,7 @@ const LabReportsList = ({ labReports }) => {
             Oldest First
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Lab reports list with animation */}
       <div className="space-y-4">
@@ -470,7 +383,6 @@ const RecordsPage = () => {
   const [labReports, setLabReports] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [userData, setUserData] = useState(null);
 
   // Fetch data from API
   useEffect(() => {
@@ -534,15 +446,6 @@ const RecordsPage = () => {
 
             console.log("Prescription data received:", prescriptionData);
             setPrescriptions(prescriptionData.Prescriptions || []);
-
-            // Update user data from the prescription response
-            setUserData({
-              firstName: prescriptionData.first_name || "",
-              lastName: prescriptionData.last_name || "",
-              gender: prescriptionData.gender || "-",
-              phone: prescriptionData.primary_phone || "",
-              id: prescriptionData.id,
-            });
           } catch (prescriptionError) {
             clearTimeout(timeoutId);
             console.error(
@@ -585,20 +488,9 @@ const RecordsPage = () => {
             const labReportData = await res.json();
             console.log("Lab Report data received:", labReportData);
             setLabReports(labReportData.LabTestReports || []);
-
-            // Update user data from the lab report response
-            setUserData({
-              firstName: labReportData.first_name || "",
-              lastName: labReportData.last_name || "",
-              gender: labReportData.gender || "-",
-              phone: labReportData.primary_phone || "",
-              id: labReportData.id,
-            });
           } catch (labError) {
             console.error("Lab reports fetch error:", labError);
             setError(`Failed to fetch lab reports: ${labError.message}`);
-
-            // You could add a fallback for lab reports similar to prescriptions if needed
           }
         }
       } catch (err) {
@@ -636,10 +528,8 @@ const RecordsPage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-slate-50 pt-24 min-h-screen pb-32">
+    <div className="max-w-md mx-auto bg-slate-50 min-h-screen pb-32">
       <div className="px-4">
-        <UserProfile userData={userData} />
-
         <RecordsTabs
           selectedTab={selectedTab}
           setSelectedTab={setSelectedTab}
@@ -654,7 +544,7 @@ const RecordsPage = () => {
       <div className="fixed bottom-6 right-6">
         <Button
           className="h-14 w-14 rounded-full bg-teal-600 hover:bg-teal-700 text-white shadow-lg"
-          onClick={() => (window.location.href = "/upload")}
+          onClick={() => (window.location.href = "/scanner")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

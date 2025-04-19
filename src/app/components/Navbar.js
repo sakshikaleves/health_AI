@@ -16,13 +16,86 @@ import { cn } from "@/lib/utils";
 import { profiles } from "@/data/Users";
 import { useUser } from "@/context/UserContext";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
-  const { currentUser, changeUser } = useUser();
+  const { currentUser, changeUser, updateUserData } = useUser();
   const pathname = usePathname();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!currentUser || !currentUser.userData) {
+        setLoading(true);
+        try {
+          // Try to fetch from prescription endpoint first
+          try {
+            const res = await fetch("/api/proxy/prescription", {
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+            });
+
+            if (!res.ok) {
+              throw new Error(`API returned status ${res.status}`);
+            }
+
+            const data = await res.json();
+
+            // Update user data in context
+            updateUserData({
+              firstName: data.first_name || "",
+              lastName: data.last_name || "",
+              gender: data.gender || "-",
+              phone: data.primary_phone || "",
+              id: data.id,
+            });
+          } catch (error) {
+            console.error("Error fetching from primary endpoint:", error);
+
+            // Try fallback endpoint
+            try {
+              const response = await fetch(`/api/proxy/patient/prescriptions/`, {
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                },
+              });
+
+              if (!response.ok) {
+                throw new Error(`Fallback fetch failed with status ${response.status}`);
+              }
+
+              const fallbackData = await response.json();
+
+              // Update user data in context
+              updateUserData({
+                firstName: fallbackData.first_name || "",
+                lastName: fallbackData.last_name || "",
+                gender: fallbackData.gender || "-",
+                phone: fallbackData.primary_phone || "",
+                id: fallbackData.id,
+              });
+            } catch (fallbackError) {
+              console.error("Error fetching from fallback endpoint:", fallbackError);
+              toast.error("Could not load user profile");
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch user data:", err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleProfileClick = (profile) => {
     changeUser(profile);
@@ -41,6 +114,12 @@ export default function Navbar() {
 
   // Get user initials for avatar fallback
   const getInitials = () => {
+    if (currentUser?.userData?.firstName || currentUser?.userData?.lastName) {
+      const firstInitial = currentUser.userData.firstName ? currentUser.userData.firstName[0] : "";
+      const lastInitial = currentUser.userData.lastName ? currentUser.userData.lastName[0] : "";
+      return (firstInitial + lastInitial).toUpperCase();
+    }
+
     if (currentUser?.name) {
       return currentUser.name
         .split(" ")
@@ -49,24 +128,13 @@ export default function Navbar() {
         .toUpperCase();
     }
 
-    // If API provides first_name and last_name properties
-    if (currentUser?.first_name || currentUser?.last_name) {
-      const firstInitial = currentUser.first_name
-        ? currentUser.first_name[0]
-        : "";
-      const lastInitial = currentUser.last_name ? currentUser.last_name[0] : "";
-      return (firstInitial + lastInitial).toUpperCase();
-    }
-
     return "U";
   };
 
-  // Display name (based on what your API provides)
-  const displayName =
-    currentUser?.name ||
-    (currentUser?.first_name && currentUser?.last_name
-      ? `${currentUser.first_name} ${currentUser.last_name}`
-      : currentUser?.first_name || "User");
+  // Display name from userData
+  const displayName = currentUser?.userData
+    ? `${currentUser.userData.firstName || ""} ${currentUser.userData.lastName || ""}`.trim()
+    : currentUser?.name || "User";
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[1000]">
@@ -79,13 +147,13 @@ export default function Navbar() {
           <Avatar className="w-7 h-7 ring-2 ring-teal-500/30 ring-offset-1">
             <AvatarImage src={currentUser?.image} alt="Profile" />
             <AvatarFallback className="bg-gradient-to-br from-teal-600 to-emerald-600 text-white text-xs font-medium">
-              {getInitials()}
+              {loading ? "..." : getInitials()}
             </AvatarFallback>
           </Avatar>
 
           <div className="flex items-center">
             <span className="text-gray-800 font-medium text-sm">
-              {displayName}
+              {loading ? "Loading..." : displayName}
             </span>
             <ChevronDown
               className={`w-4 h-4 ml-1 text-gray-600 transition-transform duration-200 ${
@@ -152,8 +220,11 @@ export default function Navbar() {
               <div className="ml-3">
                 <p className="font-semibold text-teal-800">{displayName}</p>
                 <p className="text-xs text-teal-600">
-                  {currentUser?.primary_phone || "No phone number"}
+                  {currentUser?.userData?.phone || currentUser?.primary_phone || "No phone number"}
                 </p>
+                {currentUser?.userData?.id && (
+                  <p className="text-xs text-teal-500 mt-1">ID: {currentUser.userData.id}</p>
+                )}
               </div>
             </div>
             <div className="mt-3 flex space-x-2">
@@ -205,7 +276,7 @@ export default function Navbar() {
             <Button
               variant="outline"
               className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
-              onClick={() => router.push("/upload")}
+              onClick={() => router.push("/scanner")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -236,7 +307,7 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Notification panel */}
+      {/* Notification panel remains the same */}
       {showNotification && (
         <div className="absolute right-2 mt-1 w-[calc(100%-1rem)] max-w-sm bg-white/95 shadow-xl rounded-xl overflow-hidden backdrop-blur-sm border border-gray-200/80">
           <div className="p-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white flex items-center justify-between">
@@ -362,59 +433,3 @@ export default function Navbar() {
     </div>
   );
 }
-
-// <ChevronDown
-//   className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${
-//     isOpen ? "rotate-180" : ""
-//   }`}
-// />;
-
-// {
-//   isOpen && (
-//     <div className="absolute mt-2 border border-gray-200/80 ml-2 mr-2 w-[calc(100%-1rem)] bg-white shadow-xl rounded-xl p-4 z-10 backdrop-blur-sm">
-//       <h3 className="text-lg font-bold mb-3 text-gray-800">Select Profile</h3>
-//       <div className="space-y-2.5">
-//         {profiles.map((profile, index) => (
-//           <div
-//             key={index}
-//             className={cn(
-//               "flex items-center justify-between p-3 border border-gray-100 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors",
-//               currentUser.id === profile.id && "bg-teal-50 border-teal-200"
-//             )}
-//             onClick={() => handleProfileClick(profile)}
-//           >
-//             <div className="flex items-center gap-3">
-//               <Avatar
-//                 className={cn(
-//                   "w-10 h-10 ring-2",
-//                   currentUser.id === profile.id
-//                     ? "ring-teal-500"
-//                     : "ring-gray-200"
-//                 )}
-//               >
-//                 <AvatarImage src={profile?.image} alt={profile?.name} />
-//               </Avatar>
-//               <div>
-//                 <p
-//                   className={cn(
-//                     "font-medium",
-//                     currentUser.id === profile.id
-//                       ? "text-teal-700"
-//                       : "text-gray-800"
-//                   )}
-//                 >
-//                   {profile.name}
-//                 </p>
-//                 <p className="text-sm text-gray-500">{profile?.status}</p>
-//               </div>
-//             </div>
-//             <Settings className="w-5 h-5 text-gray-500 hover:text-teal-600 transition-colors" />
-//           </div>
-//         ))}
-//       </div>
-//       <button className="w-full mt-4 py-3 text-teal-700 font-medium border-t border-gray-100 pt-3 hover:text-teal-800 transition-colors">
-//         Add new account
-//       </button>
-//     </div>
-//   );
-// }

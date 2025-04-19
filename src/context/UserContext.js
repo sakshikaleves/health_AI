@@ -16,7 +16,7 @@ export const UserProvider = ({ children }) => {
       setCurrentUser({
         isAuthenticated: true,
         sessionId,
-        // You might want to fetch user details using the session ID here
+        // We'll fetch and add userData separately
       });
     } else {
       setCurrentUser({ isAuthenticated: false });
@@ -28,6 +28,14 @@ export const UserProvider = ({ children }) => {
     setCurrentUser(user);
   };
 
+  // New function to update user data
+  const updateUserData = (userData) => {
+    setCurrentUser(prevUser => ({
+      ...prevUser,
+      userData
+    }));
+  };
+
   const logout = () => {
     localStorage.removeItem("sessionId");
     setCurrentUser({ isAuthenticated: false });
@@ -35,7 +43,7 @@ export const UserProvider = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ currentUser, changeUser, logout, isLoading }}
+      value={{ currentUser, changeUser, updateUserData, logout, isLoading }}
     >
       {children}
     </UserContext.Provider>

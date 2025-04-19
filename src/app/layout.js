@@ -29,7 +29,8 @@ export default function RootLayout({ children }) {
       >
         <UserProvider>
           <ProfileNavbar />
-          {children}
+          <div>{children}</div>
+
           <Toaster position="top-center" />
           <BottomNavbar />
         </UserProvider>
