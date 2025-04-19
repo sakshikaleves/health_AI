@@ -5,9 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -142,7 +139,7 @@ const LabReportDetail = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4 pb-16 bg-slate-50 min-h-screen">
+    <div className="max-w-md mx-auto p-4 pb-16 pt-20 bg-slate-50 min-h-screen">
       <BackButton onClick={() => router.push("/records")} />
 
       {report && (
@@ -156,9 +153,6 @@ const LabReportDetail = () => {
                   <p className="text-blue-100 text-sm mt-1">
                     {report.Lab?.name || "Medical Laboratory"}
                   </p>
-                </div>
-                <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 text-white text-sm">
-                  ID: {report.id}
                 </div>
               </div>
             </div>
@@ -232,53 +226,7 @@ const LabReportDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Patient Information Card */}
-          {report.Patient && (
-            <Card className="mb-5 overflow-hidden border-0 shadow-sm">
-              <div className="bg-gray-50 p-4 border-b border-gray-100">
-                <h3 className="text-gray-700 font-medium flex items-center">
-                  <User className="h-4 w-4 mr-2 text-gray-500" />
-                  Patient Information
-                </h3>
-              </div>
-              <CardContent className="p-4">
-                <div className="flex flex-col gap-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Name</span>
-                    <span className="text-sm font-medium text-gray-700">
-                      {report.Patient.first_name} {report.Patient.last_name}
-                    </span>
-                  </div>
-
-                  {report.Patient.gender && report.Patient.gender !== "-" && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Gender</span>
-                      <span className="text-sm font-medium text-gray-700">
-                        {report.Patient.gender}
-                      </span>
-                    </div>
-                  )}
-
-                  {report.Patient.primary_phone && (
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">Phone</span>
-                      <span className="text-sm font-medium text-gray-700">
-                        {report.Patient.primary_phone}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Patient ID</span>
-                    <span className="text-sm font-medium text-gray-700">
-                      {report.Patient.id}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
+         
           {/* Test Results Card */}
           {report.TestResults && report.TestResults.length > 0 && (
             <Card className="mb-5 overflow-hidden border-0 shadow-md">

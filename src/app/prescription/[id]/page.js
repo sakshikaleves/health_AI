@@ -5,9 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +12,10 @@ import {
   ArrowLeft,
   FileText,
   User,
-  Calendar,
-  Clock,
   PenTool,
   Pill,
 } from "lucide-react";
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import { toast } from "sonner";
 
 const PrescriptionDetail = () => {
@@ -159,7 +154,7 @@ const PrescriptionDetail = () => {
     : [];
 
   return (
-    <div className="max-w-md mx-auto p-4 pb-16 bg-gray-50 min-h-screen">
+    <div className="max-w-md mx-auto pt-20 p-4 pb-16 bg-gray-50 min-h-screen">
       <BackButton onClick={() => router.push("/records")} />
 
       {prescription && (
