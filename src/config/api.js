@@ -11,3 +11,7 @@ export const AUTH_ENDPOINT = `${API_V1_URL}/auth`;
 
 // Patient endpoints
 export const PATIENT_ENDPOINT = `${API_V1_URL}/patient`;
+
+// Export the complete endpoints for direct use
+export const LAB_REPORT_ENDPOINT = (id, byTestGroup = false) => 
+  `${PATIENT_ENDPOINT}/labreport/${id}${byTestGroup ? '?byTestGroup=True' : ''}`;
