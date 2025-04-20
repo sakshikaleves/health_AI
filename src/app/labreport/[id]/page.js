@@ -320,11 +320,22 @@ const CategoryCard = ({
   }
 
   return (
-    <Card className={`overflow-hidden shadow-md border ${isExpanded ? "ring-2 ring-blue-300" : "border-gray-200"}`}>
+    <Card
+      className={`overflow-hidden shadow-md border ${
+        isExpanded ? "ring-2 ring-blue-300" : "border-gray-200"
+      }`}
+    >
       <div className="relative">
         {/* Front side of Category Card */}
-        <div className={`transition-all duration-500 ${isFlipped ? "hidden" : "block"}`}></div>
-          <CardHeader className="p-4 cursor-pointer bg-white" onClick={toggleExpand}>
+        <div
+          className={`transition-all duration-500 ${
+            isFlipped ? "hidden" : "block"
+          }`}
+        >
+          <CardHeader
+            className="p-4 cursor-pointer bg-white"
+            onClick={toggleExpand}
+          >
             <div className="flex justify-between items-center">
               <div>
                 <CardTitle className="text-gray-800 font-medium text-base">
@@ -336,7 +347,9 @@ const CategoryCard = ({
               </div>
               <div className="flex flex-col items-end space-y-2">
                 {Analysis && Analysis["Health Score"] && (
-                  <Badge className={getScoreBadgeVariant(Analysis["Health Score"])}>
+                  <Badge
+                    className={getScoreBadgeVariant(Analysis["Health Score"])}
+                  >
                     Score: {Analysis["Health Score"]}/10
                   </Badge>
                 )}
@@ -373,75 +386,87 @@ const CategoryCard = ({
                   />
                 ))
               ) : (
-                <p className="text-center text-gray-500 p-2">No test results available for this category</p>
+                <p className="text-center text-gray-500 p-2">
+                  No test results available for this category
+                </p>
               )}
             </CardContent>
           )}
         </div>
+      </div>
+      {/* Back side of Category Card - Analysis & Recommendations */}
+      <div
+        className={`transition-all duration-500 ${
+          isFlipped ? "block" : "hidden"
+        }`}
+      >
+        <CardHeader className="p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white flex justify-between items-center">
+          <div>
+            <CardTitle className="text-white font-medium">
+              {HealthCategory.name} Analysis
+            </CardTitle>
+            <CardDescription className="text-white/80 text-sm">
+              Detailed health information
+            </CardDescription>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-white hover:bg-white/20"
+            onClick={(e) => toggleFlip(e)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
 
-        {/* Back side of Category Card - Analysis & Recommendations */}
-        <div className={`transition-all duration-500 ${isFlipped ? "block" : "hidden"}`}>
-          <CardHeader className="p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white flex justify-between items-center">
-            <div>
-              <CardTitle className="text-white font-medium">
-                {HealthCategory.name} Analysis
-              </CardTitle>
-              <CardDescription className="text-white/80 text-sm">
-                Detailed health information
-              </CardDescription>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 text-white hover:bg-white/20"
-              onClick={(e) => toggleFlip(e)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </CardHeader>
+        <CardContent className="p-4">
+          <Tabs defaultValue="summary" className="w-full">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="summary">Summary</TabsTrigger>
+              <TabsTrigger value="analysis">Analysis</TabsTrigger>
+              <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+            </TabsList>
 
-          <CardContent className="p-4">
-            <Tabs defaultValue="summary" className="w-full">
-              <TabsList className="grid grid-cols-4 mb-4">
-                <TabsTrigger value="summary">Summary</TabsTrigger>
-                <TabsTrigger value="analysis">Analysis</TabsTrigger>
-                <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
-              </TabsList>
+            <TabsContent value="summary" className="space-y-4">
+              {Analysis?.Summary && (
+                <div className="space-y-2">
+                  <h3 className="font-medium">Overall {HealthCategory.name}</h3>
+                  <p className="text-sm">
+                    {Analysis.Summary["Overall Kidney Health"] ||
+                      "Not available"}
+                  </p>
 
-              <TabsContent value="summary" className="space-y-4">
-                {Analysis?.Summary && (
-                  <div className="space-y-2">
-                    <h3 className="font-medium">Overall {HealthCategory.name}</h3>
-                    <p className="text-sm">
-                      {Analysis.Summary["Overall Kidney Health"] || "Not available"}
-                    </p>
-                 
-                    {Analysis.Summary["Key Observations"]?.length > 0 && (
-                      <>
-                        <h4 className="font-medium text-sm mt-4">Key Observations</h4>
-                        <ul className="list-disc pl-5 text-sm space-y-1">
-                          {Analysis.Summary["Key Observations"].map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
+                  {Analysis.Summary["Key Observations"]?.length > 0 && (
+                    <>
+                      <h4 className="font-medium text-sm mt-4">
+                        Key Observations
+                      </h4>
+                      <ul className="list-disc pl-5 text-sm space-y-1">
+                        {Analysis.Summary["Key Observations"].map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              )}
+            </TabsContent>
 
-              <TabsContent value="analysis" className="space-y-4">
-                {Analysis?.["Detailed Analysis"] && 
-                  Object.entries(Analysis["Detailed Analysis"]).map(([key, data], i) => (
+            <TabsContent value="analysis" className="space-y-4">
+              {Analysis?.["Detailed Analysis"] &&
+                Object.entries(Analysis["Detailed Analysis"]).map(
+                  ([key, data], i) => (
                     <div key={i} className="border rounded-lg p-3">
                       <h3 className="font-medium">{key}</h3>
                       <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
                         <div>
-                          <span className="font-medium">Value:</span> {data.Value}
+                          <span className="font-medium">Value:</span>{" "}
+                          {data.Value}
                         </div>
                         <div>
-                          <span className="font-medium">Interpretation:</span> {data.Interpretation}
+                          <span className="font-medium">Interpretation:</span>{" "}
+                          {data.Interpretation}
                         </div>
                       </div>
                       {/* {data.Details?.length > 0 && (
@@ -455,68 +480,78 @@ const CategoryCard = ({
                         </div>
                       )} */}
                     </div>
-                  ))
-                }
-              </TabsContent>
-
-              <TabsContent value="recommendations" className="space-y-4">
-                {Analysis?.Recommendations && (
-                  <div className="space-y-4">
-                    {Analysis.Recommendations.Lifestyle?.length > 0 && (
-                      <div>
-                        <h3 className="font-medium">Lifestyle Recommendations</h3>
-                        <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
-                          {Analysis.Recommendations.Lifestyle.map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {Analysis.Recommendations["Potential Improvements"]?.length > 0 && (
-                      <div>
-                        <h3 className="font-medium">Potential Improvements</h3>
-                        <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
-                          {Analysis.Recommendations["Potential Improvements"].map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {Analysis.Recommendations["Preventive Measures"]?.length > 0 && (
-                      <div>
-                        <h3 className="font-medium">Preventive Measures</h3>
-                        <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
-                          {Analysis.Recommendations["Preventive Measures"].map((item, i) => (
-                            <li key={i}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
+                  )
                 )}
-              </TabsContent>
+            </TabsContent>
 
-              <TabsContent value="details">
-                <div className="prose prose-sm max-w-none">
-                  <p>{HealthCategory.description || "No description available"}</p>
-                  <div className="mt-4">
-                    <h3 className="font-medium">Test Summary</h3>
-                    <div className="mt-2 space-y-2">
-                      {TestResults?.map((test, i) => (
-                        <div key={i} className="text-sm">
-                          <span className="font-medium">{test.LabTest?.name || "Test"}:</span>{" "}
-                          {test.result_value} {test.units}
-                        </div>
-                      ))}
+            <TabsContent value="recommendations" className="space-y-4">
+              {Analysis?.Recommendations && (
+                <div className="space-y-4">
+                  {Analysis.Recommendations.Lifestyle?.length > 0 && (
+                    <div>
+                      <h3 className="font-medium">Lifestyle Recommendations</h3>
+                      <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
+                        {Analysis.Recommendations.Lifestyle.map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
                     </div>
+                  )}
+
+                  {Analysis.Recommendations["Potential Improvements"]?.length >
+                    0 && (
+                    <div>
+                      <h3 className="font-medium">Potential Improvements</h3>
+                      <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
+                        {Analysis.Recommendations["Potential Improvements"].map(
+                          (item, i) => (
+                            <li key={i}>{item}</li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+
+                  {Analysis.Recommendations["Preventive Measures"]?.length >
+                    0 && (
+                    <div>
+                      <h3 className="font-medium">Preventive Measures</h3>
+                      <ul className="list-disc pl-5 text-sm space-y-1 mt-2">
+                        {Analysis.Recommendations["Preventive Measures"].map(
+                          (item, i) => (
+                            <li key={i}>{item}</li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="details">
+              <div className="prose prose-sm max-w-none">
+                <p>
+                  {HealthCategory.description || "No description available"}
+                </p>
+                <div className="mt-4">
+                  <h3 className="font-medium">Test Summary</h3>
+                  <div className="mt-2 space-y-2">
+                    {TestResults?.map((test, i) => (
+                      <div key={i} className="text-sm">
+                        <span className="font-medium">
+                          {test.LabTest?.name || "Test"}:
+                        </span>{" "}
+                        {test.result_value} {test.units}
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </div>
     </Card>
   );
 };
