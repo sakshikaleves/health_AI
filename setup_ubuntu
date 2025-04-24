@@ -1,0 +1,21 @@
+689  cd mahul/pmm/app-frontend/
+  690  ls
+  691  sudo apt update && sudo apt -y upgrade
+  692  sudo apt install -y build-essential curl git
+  693  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+  694  sudo apt install -y nodejs
+  695  nodejs -v
+  696  npm -v
+  697  sudo npm install -g pm2
+  698  ls -al
+  699  find . -name ".env*" -print
+  700  npm install
+  701  npm audit
+  702  npm audit fix
+  703  npm audit fix --force
+  704  npm audit
+  705  npm run start
+  706  npm run dev
+  707  vi package.json 
+  708  npm run dev
+
