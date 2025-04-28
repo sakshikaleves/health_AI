@@ -69,31 +69,28 @@ const PrescriptionDetail = () => {
   };
 
   // Extract medication details from notes if available
-  const extractMedicationDetails = (notes) => {
-    if (!notes) return [];
+/*
+  const extractMedicationDetails = (pdArr) => {
+    if (!pdArr) return [];
 
     // This is a basic implementation - adapt based on your actual data format
-    const lines = notes.split("\n").filter((line) => line.trim());
+    // const lines = notes.split("\n").filter((line) => line.trim());
     const medications = [];
 
     let currentMed = {};
 
-    for (let line of lines) {
-      const trimmedLine = line.trim();
-
-      // Look for typical medication patterns
-      if (/^\d+\.|\-|\*/.test(trimmedLine) || /^[A-Z]/.test(trimmedLine)) {
-        // If we already have a medication, save it before starting a new one
-        if (currentMed.name) {
-          medications.push(currentMed);
+    for (let pd of pdArr) {
+        if (pd.Drug.name) {
           currentMed = {};
         }
-        currentMed.name = trimmedLine.replace(/^\d+\.|\-|\*/, "").trim();
+        currentMed.name = trimmedLine.replace(/^\d+\.|\-|\*, "").trim();
       } else if (currentMed.name) {
         // Add to instructions if we're already processing a medication
         currentMed.instructions =
           (currentMed.instructions || "") + " " + trimmedLine;
       }
+      currentMed.name = 
+      medications.push(currentMed);
     }
 
     // Add the last medication if exists
@@ -103,6 +100,7 @@ const PrescriptionDetail = () => {
 
     return medications;
   };
+*/
 
   if (isLoading) {
     return (
@@ -149,9 +147,7 @@ const PrescriptionDetail = () => {
   }
 
   // Extract medications from notes if they exist
-  const medications = prescription?.notes
-    ? extractMedicationDetails(prescription.notes)
-    : [];
+  const medications = prescription?.PrescribedDrugs;
 
   return (
     <div className="max-w-md mx-auto pt-20 p-4 pb-16 bg-gray-50 min-h-screen">
@@ -161,6 +157,11 @@ const PrescriptionDetail = () => {
         <>
           {/* Main prescription info */}
           <PrescriptionCard prescription={prescription} />
+
+	      {medications.map(pd => (
+        	// Always give a stable `key` when rendering lists
+        	<MedicationCard key={pd.Drug.id} pd={pd} />
+       	  ))}
 
           {/* Drug & Food Interactions Section */}
           <DrugInteractionsCard
@@ -252,6 +253,7 @@ const PrescriptionCard = ({ prescription }) => {
       </div>
       <CardContent className="p-0">
         {/* Doctor information */}
+	{prescription.Doctor && (
         <div className="p-4 border-b border-gray-100 bg-white">
           <div className="flex items-start">
             <div className="bg-teal-50 p-2 rounded-full">
@@ -275,6 +277,7 @@ const PrescriptionCard = ({ prescription }) => {
             </div>
           </div>
         </div>
+	)}
 
         {/* Patient information */}
         <div className="p-4 bg-gray-50">
@@ -304,6 +307,69 @@ const PrescriptionCard = ({ prescription }) => {
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+const MedicationCard = ({pd}) => {
+	if (!pd) return null;
+	
+	return (
+    <Card className="mb-5 border-0 shadow-md overflow-hidden rounded-xl">
+      <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4">
+        <h2 className="text-white text-lg font-semibold flex items-center">
+          <div className="bg-white p-1.5 rounded-full shadow-md mr-3 flex items-center justify-center">
+            <Pill className="h-4 w-4 text-amber-600" />
+          </div>
+         	{pd.Drug.name} 
+        </h2>
+      </div>
+      <CardContent className="p-0">
+        <div className="bg-gradient-to-b from-amber-50 to-white">
+            <div 
+              className="prose prose-sm max-w-none text-gray-700 p-5 prose-headings:font-medium prose-h3:text-base prose-h2:text-lg prose-li:my-1 prose-p:my-2 prose-strong:text-amber-700 prose-strong:font-medium" >
+			<div className="bg-gray-100 m-6 p-4"><h4>{pd.Drug.description}</h4></div>
+			<div className="bg-gray-50 p-4 rounded-lg shadow-sm mb-6">
+  				<h4 className="text-lg font-semibold text-gray-800 mb-3">
+    					Dosage & Schedule
+				</h4>
+  			<ul className="list-disc list-inside space-y-2 text-gray-700">
+				<li>Dosage:{pd.dosage}</li>
+			  	<li>Frequency:{pd.frequency}</li>	
+			  	<li>Duration:{pd.duration}</li>	
+			</ul></div>	
+
+				{/* Interactions */}
+				<div className="mt-6">
+				  <h3 className="text-md font-semibold mb-2">Interactions</h3>
+
+				  {Array.isArray(pd.Interactions) && pd.Interactions.length > 0 ? (
+					<ul className="space-y-4">
+					  {pd.Interactions.map((inter, idx) => (
+						<li
+						  key={idx}  // fallback to index
+						  className="p-3 border rounded-lg bg-amber-50"
+						>
+						  <p>
+							<strong>Substance:</strong> {inter.substance}
+						  </p>
+						  <p>
+							<strong>Effect:</strong> {inter.effect}
+						  </p>
+						  <p>
+							<strong>Advice:</strong> {inter.advice}
+						  </p>
+						</li>
+					  ))}
+					</ul>
+				  ) : (
+					<p className="text-sm text-gray-500">No known interactions.</p>
+				  )}
+				</div>
+
+	       </div>
+	    </div>
+	  </CardContent>
+	</Card>
   );
 };
 
