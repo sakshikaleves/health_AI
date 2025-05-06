@@ -4,6 +4,7 @@
  */
 
 export const API_BASE_URL = "http://51.20.164.58:5001";
+export const BASE_URL = "http://51.20.164.58:5001";
 export const API_V1_URL = `${API_BASE_URL}/api/v1`;
 
 // Auth endpoints
