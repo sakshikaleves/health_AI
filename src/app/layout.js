@@ -29,8 +29,12 @@ export default function RootLayout({ children }) {
       >
         <UserProvider>
           <ProfileNavbar />
-          <div>{children}</div>
-
+      {/* <div>{children}</div>  */}
+<div className="min-h-screen">
+        <main className="p-4">
+          {children}
+        </main>
+      </div>
           <Toaster position="top-center" />
           <BottomNavbar />
         </UserProvider>
