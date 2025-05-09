@@ -1,0 +1,104 @@
+.perspective {
+    perspective: 1000px;
+  }
+  
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+  
+
+
+
+
+
+  .card {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    perspective: 1000px;
+  }
+  
+  .card__side {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    border-radius: 0.75rem;
+    backface-visibility: hidden;
+    transition: transform 0.8s ease;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+  }
+  
+  .card__side--front {
+    z-index: 2;
+    transform: rotateY(0deg);
+  }
+  
+  .card__side--back {
+    transform: rotateY(180deg);
+    z-index: 1;
+  }
+  
+  /* Flip animation on hover */
+  .card:hover .card__side--front {
+    transform: rotateY(-180deg);
+  }
+  
+  .card:hover .card__side--back {
+    transform: rotateY(0deg);
+  }
+  
+
+
+
+  .card {
+    perspective: 1500px;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .card__inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s ease;
+    transform-style: preserve-3d;
+  }
+  
+  /* Flip the inner wrapper on hover */
+  .card:hover .card__inner {
+    transform: rotateY(180deg);
+  }
+  
+  .card__side {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    backface-visibility: hidden;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+  }
+  
+  .card__side--front {
+    z-index: 2;
+    transform: rotateY(0);
+  }
+  
+  .card__side--back {
+    transform: rotateY(180deg);
+    z-index: 1;
+  }
+  

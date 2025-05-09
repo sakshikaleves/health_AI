@@ -1,3 +1,6 @@
+
+// D:\New folder (2)\original_mahul\app-frontend\src\app\api\proxy\labreport\[id]\route.js
+
 import axios from "axios";
 import { PATIENT_ENDPOINT } from "@/config/api";
 

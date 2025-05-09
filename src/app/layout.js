@@ -4,6 +4,9 @@ import BottomNavbar from "./components/BottomNavbar";
 import ProfileNavbar from "./components/Navbar";
 import { UserProvider } from "@/context/UserContext";
 import { Toaster } from "sonner";
+//  D:\New folder (2)\original_mahul\app-frontend\src\app\layout.js
+
+import { faRepeat } from "@fortawesome/free-solid-svg-icons";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

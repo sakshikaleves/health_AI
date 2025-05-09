@@ -139,7 +139,7 @@ export default function Navbar() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[1000]">
       {/* Main Navbar */}
-      <div className="flex justify-between items-center bg-gradient-to-r from-teal-800 to-teal-600 px-4 py-3 shadow-lg">
+      <div className="flex justify-between items-center bg-gradient-to-r from-teal-800 to-teal-600 px-4 py-3 shadow-lg"> 
         <div
           className="flex items-center gap-2.5 bg-white/95 pl-2.5 pr-3.5 py-1.5 rounded-full shadow-md cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-white"
           onClick={() => setIsOpen(!isOpen)}
@@ -242,57 +242,96 @@ export default function Navbar() {
               </Button>
             </div>
           </div>
-
-          {/* Navigation shortcuts */}
           <div className="grid grid-cols-3 gap-2 mb-4">
-            <Button
-              variant="outline"
-              className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
-              onClick={() => router.push("/dashboard")}
-            >
-              <Home className="h-5 w-5 text-teal-600" />
-              <span className="text-xs">Home</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
-              onClick={() => router.push("/records")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-teal-600"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                <path
-                  fillRule="evenodd"
-                  d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-xs">Records</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
-              onClick={() => router.push("/scanner")}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-teal-600"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="text-xs">Upload</span>
-            </Button>
-          </div>
+  {/* Home */}
+  <Button
+    variant="outline"
+    className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
+    onClick={() => router.push("/dashboard")}
+  >
+    <Home className="h-5 w-5 text-teal-600" />
+    <span className="text-xs">Home</span>
+  </Button>
+
+  {/* Records */}
+  <Button
+    variant="outline"
+    className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
+    onClick={() => router.push("/records")}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 text-teal-600"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+      <path
+        fillRule="evenodd"
+        d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+        clipRule="evenodd"
+      />
+    </svg>
+    <span className="text-xs">Records</span>
+  </Button>
+
+  {/* Upload */}
+  <Button
+    variant="outline"
+    className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
+    onClick={() => router.push("/scanner")}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 text-teal-600"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+    >
+      <path
+        fillRule="evenodd"
+        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"
+        clipRule="evenodd"
+      />
+    </svg>
+    <span className="text-xs">Upload</span>
+  </Button>
+
+  {/* Patients */}
+  <Button
+    variant="outline"
+    className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
+    onClick={() => router.push("/patients")}
+  >
+    <span className="text-teal-600 text-lg">📄</span>
+    <span className="text-xs">Patients</span>
+  </Button>
+
+  {/* Chats */}
+  <Button
+  variant="outline"
+  className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
+  onClick={() => router.push("/chats")}
+>
+  <span className="text-teal-600 text-lg">💬</span>
+  <span className="text-xs">Chats</span>
+</Button>
+
+
+<Button
+  variant="outline"
+  className="flex flex-col items-center justify-center h-auto py-3 text-gray-700 border-gray-100 hover:border-teal-200 hover:bg-teal-50 space-y-1"
+  onClick={() => router.push("/chats")}
+>
+<span className="text-teal-600 text-lg">📄</span>
+  <span className="text-xs">Share</span>
+</Button>
+
+
+
+
+
+</div>
+
 
           <div className="border-t border-gray-100 pt-3">
             <Button

@@ -1,5 +1,5 @@
 import * as React from "react"
-
+// D:\New folder (2)\original_mahul\app-frontend\src\components\ui\card.jsx
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef(({ className, ...props }, ref) => (
@@ -47,4 +47,5 @@ const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+
